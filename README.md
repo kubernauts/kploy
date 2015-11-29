@@ -15,8 +15,8 @@ In the following I assume you're in a directory we will call `$KPLOY_DEMO_HOME`.
 First you create a file `Kployfile` (formatted in YAM) with the following content in `$KPLOY_DEMO_HOME`:
 
     apiserver: http://localhost:8080
-    name: test_app
     author: Your Name
+    name: test_app
     source: https://github.com/yourusername/therepo
 
 Then you create two sub-directories in `$KPLOY_DEMO_HOME`, called `rcs` and `services`. 
@@ -40,3 +40,11 @@ To actually deploy your app, do:
     ./kploy run
 
 ## Demo
+
+TBD
+
+
+## To Do
+
+- [ ] Add Travis build
+- [ ] Add deep validation for `dryrun`, that is validate RCs and services via the API server
