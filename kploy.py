@@ -89,6 +89,7 @@ def cmd_dryrun():
                 sys.exit(1)
     except (IOError, IndexError, KeyError) as e:
         print("Something went wrong:\n%s" %(e))
+        sys.exit(1)
     print(80*"=")
     print("\nOK, we're looking good! You're ready to deploy your app with `kploy run` now :)\n")
 
