@@ -1,5 +1,9 @@
 # kploy
 
+[![version](https://img.shields.io/pypi/v/kploy.svg)](https://pypi.python.org/pypi/kploy/)
+[![downloads](https://img.shields.io/pypi/dm/kploy.svg)](https://pypi.python.org/pypi/kploy/")
+[![build status](https://travis-ci.org/mhausenblas/kploy.svg?branch=master)](https://travis-ci.org/mhausenblas/kploy)
+
 Welcome to kploy, an opinionated Kubernetes deployment system for appops.
 We use convention over configuration in order to enable you to run 
 microservices-style applications with Kubernetes as simple and fast as possible.
@@ -7,8 +11,6 @@ microservices-style applications with Kubernetes as simple and fast as possible.
 ## Dependencies
 
 * The [pyk](https://github.com/mhausenblas/pyk) toolkit
-* The [Requests](http://docs.python-requests.org/en/latest/) library (note: I've tested with version `2.6.2`)
-* The [PyYAML](http://pyyaml.org/wiki/PyYAML) library (note: I've tested with version `3.11`)
 
 ## Preparing your deployment
 
@@ -147,7 +149,6 @@ Note that I've used the following files for testing:
 
 ## To Do
 
-- [x] Implement basic functionality (dry run and run)
 - [ ] Add init command (creates Kployfile and placeholder RC and service file)
 - [ ] Add app management (list of apps, check apps status)
 - [ ] Add tear down command
