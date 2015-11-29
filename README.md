@@ -9,7 +9,7 @@ We use convention over configuration in order to enable you to run
 microservices-style applications with Kubernetes as simple and fast as possible.
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=TJpucj4v4iE" target="_blank">
- <img src="http://img.youtube.com/vi/TJpucj4v4iE/0.jpg" alt="kploy demo" width="600" border="1" />
+ <img src="http://img.youtube.com/vi/TJpucj4v4iE/0.jpg" alt="kploy demo" width="240" border="1" />
 </a>
 
 ## Dependencies
