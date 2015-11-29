@@ -93,7 +93,48 @@ def cmd_dryrun():
     print("\nOK, we're looking good! You're ready to deploy your app with `kploy run` now :)\n")
 
 def cmd_run():
-    pass
+    """
+    Looks for a `Kployfile` file in the current directory and tries to run it.
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if VERBOSE: logging.info("Trying to run %s " %(kployfile))
+    try:
+            kploy, _  = util.load_yaml(filename=kployfile)
+            logging.debug(kploy)
+            pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=kploy["apiserver"], debug=DEBUG)
+            
+            rc_manifests_confirmed = []
+            svc_manifests_confirmed = []
+            rcs = os.path.join(here, RC_DIR)
+            for _, _, rc_manifests in os.walk(rcs):
+                for rc_manifest in rc_manifests:
+                    rc_manifests_confirmed.append(rc_manifest)
+            services = os.path.join(here, SVC_DIR)
+            for _, _, services_manifests in os.walk(services):
+                for service_manifest in services_manifests:
+                    svc_manifests_confirmed.append(service_manifest)
+            
+            for rcm in rc_manifests_confirmed:
+                rc_filename = os.path.join(os.path.join(here, RC_DIR), rcm)
+                if VERBOSE: logging.info("Deploying RC %s" %rc_filename)
+                _, rc_url = pyk_client.create_rc(manifest_filename=rc_filename)
+                rc = pyk_client.describe_resource(rc_url)
+                logging.debug(rc.json())
+
+            for svcm in svc_manifests_confirmed:
+                svc_filename = os.path.join(os.path.join(here, SVC_DIR), svcm)
+                if VERBOSE: logging.info("Deploying service %s" %svc_filename)
+                _, svc_url = pyk_client.create_svc(manifest_filename=svc_filename)
+                svc = pyk_client.describe_resource(svc_url)
+                logging.debug(svc.json())
+    except (Error) as e:
+        print("Something went wrong:\n%s" %(e))
+        print("Consider validating your deployment with with `kploy dryrun` first!")
+        sys.exit(1)
+    print(80*"=")
+    print("\nOK, I've deployed `%s`\n" %(kploy["name"]))
+    
 
 if __name__ == "__main__":
     try:
