@@ -1,4 +1,7 @@
 pyk/
+rcs/
+services/
+Kployfile
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
