@@ -1,0 +1,18 @@
+#!/bin/bash
+
+###############################################################################
+# The kploy launch script.
+#
+# Usage:
+#
+#  ./kploy
+#
+# Author: Michael Hausenblas
+# Init: 2015-11-29
+
+
+set -e # exit on error immediately
+
+python kploy.py "$@"
+
+exit 0

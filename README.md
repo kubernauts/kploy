@@ -7,6 +7,8 @@ microservices-style applications with Kubernetes as simple and fast as possible.
 ## Dependencies
 
 * The [pyk](https://github.com/mhausenblas/pyk) toolkit
+* The [Requests](http://docs.python-requests.org/en/latest/) library (note: I've tested with version `2.6.2`)
+* The [PyYAML](http://pyyaml.org/wiki/PyYAML) library (note: I've tested with version `3.11`)
 
 ## Preparing your deployment
 
