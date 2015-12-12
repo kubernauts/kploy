@@ -13,8 +13,10 @@ import logging
 import os
 import sys
 
+import kploycommon
 from pyk import toolkit
 from pyk import util
+
 
 DEBUG = False    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
@@ -58,31 +60,18 @@ def cmd_dryrun():
             print("\n  CHECK: Are there RC and service manifests available around here?")
             try:
                 rcs = os.path.join(here, RC_DIR)
-                rc_manifests_confirmed = []
                 logging.debug("Asserting %s exists" %(os.path.dirname(rcs)))
                 assert os.path.exists(rcs)
-                for _, _, rc_manifests in os.walk(rcs):
-                    for rc_manifest in rc_manifests:
-                        logging.debug("Detected RC %s" %(rc_manifest))
-                        rc_manifests_confirmed.append(rc_manifest)
+                rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
                 print("         I found %s RC manifest(s) in %s" %(int(len(rc_manifests_confirmed)), os.path.dirname(rcs)))
-                if VERBOSE:
-                    for rcm in rc_manifests_confirmed:
-                        logging.info("-> %s" %rcm)
+                if VERBOSE: kploycommon._dump(rc_manifests_confirmed)
 
                 services = os.path.join(here, SVC_DIR)
-                svc_manifests_confirmed = []
                 logging.debug("Asserting %s exists" %(os.path.dirname(services)))
                 assert os.path.exists(services)
-                for _, _, services_manifests in os.walk(services):
-                    for service_manifest in services_manifests:
-                        logging.debug("Detected service %s" %(service_manifest))
-                        svc_manifests_confirmed.append(service_manifest)
+                svc_manifests_confirmed = kploycommon._visit(services, 'service')
                 print("         I found %s service manifest(s) in %s" %(int(len(svc_manifests_confirmed)), os.path.dirname(services)))
-                if VERBOSE:
-                    for svcm in svc_manifests_confirmed:
-                        logging.info("-> %s" %svcm)
-
+                if VERBOSE: kploycommon._dump(svc_manifests_confirmed)
                 print("  \o/ ... I found both RC and service manifests to deploy your wonderful app!")
             except:
                 print("  :( ... No RC and/or service manifests found to deploy your app.")
