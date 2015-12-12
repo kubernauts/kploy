@@ -13,6 +13,9 @@ from pyk import toolkit
 from pyk import util
 
 def _visit(dir_name, resource_name):
+    """
+    Walks a given directory and return list of files in there.
+    """
     flist = []
     logging.debug("Visiting %s" %dir_name)
     for _, _, file_names in os.walk(dir_name):
@@ -22,10 +25,17 @@ def _visit(dir_name, resource_name):
     return flist
 
 def _dump(alist):
+    """
+    Dumps a list to the INFO logger.
+    """
     for litem in alist:
         logging.info("-> %s" %litem)
 
 def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
+    """
+    Deploys a resource based on a manifest. Currently the following resources are supported:
+    replication controllers, services.
+    """
     for litem in alist:
         file_name = os.path.join(os.path.join(here, dir_name), litem)
         if verbose: logging.info("Deploying %s %s" %(resource_name, file_name))

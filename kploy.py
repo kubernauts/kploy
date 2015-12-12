@@ -12,6 +12,7 @@ import argparse
 import logging
 import os
 import sys
+import pprint
 
 import kploycommon
 from pyk import toolkit
@@ -106,20 +107,27 @@ def cmd_run():
         sys.exit(1)
     print(80*"=")
     print("\nOK, I've deployed `%s`\n" %(kploy["name"]))
-    
+
+def cmd_list():
+    """
+    Lists apps and their status.
+    """
+
 
 if __name__ == "__main__":
     try:
+        cmds = {
+            "dryrun" : cmd_dryrun,
+            "run" : cmd_run,
+            "list": cmd_list
+        }
+
         parser = argparse.ArgumentParser()
-        parser.add_argument("cmd", help="The command to run, can be either `dryrun` or `run`")
-        parser.add_argument("-v", "--verbose", help="Let me tell you every little dirty secrect", action="store_true")
+        parser.add_argument("cmd", help="The currently supported commands are: %s" %(pprint.pformat(cmds.keys())))
+        parser.add_argument("-v", "--verbose", help="Let me tell you every little dirty secret", action="store_true")
         args = parser.parse_args()
         if args.verbose:
             VERBOSE = True
-        cmds = {
-            "dryrun" : cmd_dryrun,
-            "run" : cmd_run
-        }
         logging.debug("Got command `%s`" %(args.cmd))
         if args.cmd in cmds.keys():
             cmds[args.cmd]()
