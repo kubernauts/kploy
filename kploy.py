@@ -93,32 +93,13 @@ def cmd_run():
             kploy, _  = util.load_yaml(filename=kployfile)
             logging.debug(kploy)
             pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=kploy["apiserver"], debug=DEBUG)
-            
-            rc_manifests_confirmed = []
-            svc_manifests_confirmed = []
-            rcs = os.path.join(here, RC_DIR)
-            for _, _, rc_manifests in os.walk(rcs):
-                for rc_manifest in rc_manifests:
-                    rc_manifests_confirmed.append(rc_manifest)
+            rc_manifests_confirmed, svc_manifests_confirmed = [], []
             services = os.path.join(here, SVC_DIR)
-            for _, _, services_manifests in os.walk(services):
-                for service_manifest in services_manifests:
-                    svc_manifests_confirmed.append(service_manifest)
-            
-            for svcm in svc_manifests_confirmed:
-                svc_filename = os.path.join(os.path.join(here, SVC_DIR), svcm)
-                if VERBOSE: logging.info("Deploying service %s" %svc_filename)
-                _, svc_url = pyk_client.create_svc(manifest_filename=svc_filename)
-                svc = pyk_client.describe_resource(svc_url)
-                logging.debug(svc.json())
-            
-            for rcm in rc_manifests_confirmed:
-                rc_filename = os.path.join(os.path.join(here, RC_DIR), rcm)
-                if VERBOSE: logging.info("Deploying RC %s" %rc_filename)
-                _, rc_url = pyk_client.create_rc(manifest_filename=rc_filename)
-                rc = pyk_client.describe_resource(rc_url)
-                logging.debug(rc.json())
-
+            rcs = os.path.join(here, RC_DIR)
+            svc_manifests_confirmed = kploycommon._visit(services, 'service')
+            rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
+            kploycommon._deploy(pyk_client, here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
+            kploycommon._deploy(pyk_client, here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with with `kploy dryrun` first!")
