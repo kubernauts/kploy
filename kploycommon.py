@@ -12,6 +12,15 @@ import logging
 from pyk import toolkit
 from pyk import util
 
+
+def _connect(api_server, debug):
+    try:
+        pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=api_server, debug=debug)
+    except:
+        print("Can't connect to the Kubernetes cluster, check the `apiserver` setting in your Kployfile")
+        sys.exit(1)
+    return pyk_client
+
 def _visit(dir_name, resource_name):
     """
     Walks a given directory and return list of files in there.

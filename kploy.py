@@ -117,7 +117,7 @@ def cmd_list():
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
         print("Resources of `%s`:" %(kploy["name"]))
-        pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=kploy["apiserver"], debug=DEBUG)
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
@@ -139,7 +139,6 @@ def cmd_list():
             rc_status = kploycommon._check_status(pyk_client, rc_path)
             res_list.append([rc_name, os.path.join(RC_DIR, rc), "RC", rc_status, rc_URL])
         print tabulate(res_list, ["NAME", "MANIFEST", "TYPE", "STATUS", "URL"], tablefmt="plain")
-        
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with with `kploy dryrun` first!")
