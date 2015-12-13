@@ -148,9 +148,12 @@ def cmd_list():
 def cmd_init():
     """
     Creates a dummy `Kployfile` file in the current directory sets up the directories.
-    """
+    """    
     here = os.path.dirname(os.path.realpath(__file__))
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if os.path.exists(kployfile):
+        print("Hey! %s already exists.\nI'm not going to destroy existing work. #kthxbye" %(kployfile))
+        sys.exit(1)
     if VERBOSE: logging.info("Setting up app %s " %(kployfile))
     ikploy = {}
     ikploy["apiserver"] = "http://localhost:8080"

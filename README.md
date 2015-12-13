@@ -175,7 +175,7 @@ Note that I've used the following files for testing:
 
 ## Manage your app
 
-To see how you app is doing, use the `list` command. All services and RCs of the app will be listed, along with their status
+To see how your app is doing, use the `list` command. All services and RCs of the app will be listed, along with their status
 (`online` means it's deployed and running) and their resource URL:
 
     $ ./kploy list
