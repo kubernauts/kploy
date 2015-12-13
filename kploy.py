@@ -26,7 +26,6 @@ DEPLOYMENT_DESCRIPTOR = "Kployfile"
 RC_DIR = "rcs/"
 SVC_DIR = "services/"
 
-
 if DEBUG:
   FORMAT = "%(asctime)-0s %(levelname)s %(message)s [at line %(lineno)d]"
   logging.basicConfig(level=logging.DEBUG, format=FORMAT, datefmt="%Y-%m-%dT%I:%M:%S")
@@ -160,6 +159,12 @@ def cmd_init():
     ikploy["source"] = "CHANGE_ME"
     if VERBOSE: logging.info("%s" %(ikploy))
     util.serialize_yaml_tofile(kployfile, ikploy)
+    if not os.path.exists(SVC_DIR):
+        os.makedirs(SVC_DIR)
+    if not os.path.exists(RC_DIR):
+        os.makedirs(RC_DIR)
+    print(80*"=")
+    print("\nOK, I've set up the %s deployment file and created necessary directories.\nNow edit the deployment file and copy manifests into the respective directories.\n" %(DEPLOYMENT_DESCRIPTOR))
 
 if __name__ == "__main__":
     try:

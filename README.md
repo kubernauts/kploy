@@ -19,7 +19,7 @@ All of the following are included in the setup:
 * The [pyk](https://github.com/mhausenblas/pyk) toolkit
 * Pretty-print tabular data with [tabulate](https://pypi.python.org/pypi/tabulate)
 
-## Preparing your deployment
+## Prepare your deployment
 
 In the following I assume you're in a directory we will call `$KPLOY_DEMO_HOME`.
 
@@ -40,7 +40,26 @@ Next, you create two sub-directories in `$KPLOY_DEMO_HOME`, called `rcs` and `se
     └── services
         └── asimple_service.yaml
 
-Now you're ready to validate your deployment.
+Now you're ready to validate your deployment. Note that you can also use the `init` command to create the required scaffolding, like so: 
+
+    $ ./kploy init
+    ================================================================================
+    
+    OK, I've set up the Kployfile deployment file and created necessary directories.
+    Now edit the deployment file and copy manifests into the respective directories.
+    
+    $ ls -al
+    drwxr-xr-x  10 mhausenblas  staff   748B 13 Dec 17:41 .
+    drwxr-xr-x  23 mhausenblas  staff   816B  5 Dec 07:44 ..
+    -rw-r--r--   1 mhausenblas  staff    85B 13 Dec 17:41 Kployfile
+    drwxr-xr-x   2 mhausenblas  staff    68B 13 Dec 17:41 rcs
+    drwxr-xr-x   2 mhausenblas  staff    68B 13 Dec 17:41 services
+    
+    $ cat Kployfile
+    apiserver: http://localhost:8080
+    author: CHANGE_ME
+    name: CHANGE_ME
+    source: CHANGE_ME
 
 ## Deploy your app
 
@@ -156,17 +175,19 @@ Note that I've used the following files for testing:
 
 ## Manage your app
 
+To see how you app is doing, use the `list` command. All services and RCs of the app will be listed, along with their status
+(`online` means it's deployed and running) and their resource URL:
+
     $ ./kploy list
     Resources of `simple_app`:
     NAME           MANIFEST                     TYPE     STATUS    URL
     webserver-svc  services/webserver-svc.yaml  service  offline   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
     webserver-rc   rcs/nginx-webserver-rc.yaml  RC       offline   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
 
-
 ## To Do
 
 - [x] Add app management (list of apps, check apps status)
-- [ ] Add init command (creates Kployfile and placeholder RC and service file)
+- [x] Add init command (creates Kployfile and placeholder RC and service file)
 - [ ] Add tear down command
 - [ ] Add dependency management
 - [ ] Add Travis build
