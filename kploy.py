@@ -146,12 +146,28 @@ def cmd_list():
         print("Consider validating your deployment with with `kploy dryrun` first!")
         sys.exit(1)
 
+def cmd_init():
+    """
+    Creates a dummy `Kployfile` file in the current directory sets up the directories.
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if VERBOSE: logging.info("Setting up app %s " %(kployfile))
+    ikploy = {}
+    ikploy["apiserver"] = "http://localhost:8080"
+    ikploy["author"] = "CHANGE_ME"
+    ikploy["name"] = "CHANGE_ME"
+    ikploy["source"] = "CHANGE_ME"
+    if VERBOSE: logging.info("%s" %(ikploy))
+    util.serialize_yaml_tofile(kployfile, ikploy)
+
 if __name__ == "__main__":
     try:
         cmds = {
             "dryrun" : cmd_dryrun,
             "run" : cmd_run,
-            "list": cmd_list
+            "list": cmd_list,
+            "init": cmd_init
         }
 
         parser = argparse.ArgumentParser()
