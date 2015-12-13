@@ -155,8 +155,8 @@ if __name__ == "__main__":
         }
 
         parser = argparse.ArgumentParser()
-        parser.add_argument("cmd", help="The currently supported commands are: %s" %(pprint.pformat(cmds.keys())))
-        parser.add_argument("-v", "--verbose", help="Let me tell you every little dirty secret", action="store_true")
+        parser.add_argument("cmd", help="The currently supported commands are: %s" %(cmds.keys()))
+        parser.add_argument("-v", "--verbose", help="let me tell you every little dirty secret", action="store_true")
         args = parser.parse_args()
         if args.verbose:
             VERBOSE = True
@@ -164,6 +164,6 @@ if __name__ == "__main__":
         if args.cmd in cmds.keys():
             cmds[args.cmd]()
         else:
-            print("Unknown command, sorry.")
+            parser.print_help()
     except:
         sys.exit(1)

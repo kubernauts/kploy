@@ -154,6 +154,15 @@ Note that I've used the following files for testing:
           targetPort: 80
           protocol: TCP
 
+## Manage your app
+
+    $ ./kploy list
+    Resources of `simple_app`:
+    NAME           MANIFEST                     TYPE     STATUS    URL
+    webserver-svc  services/webserver-svc.yaml  service  offline   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
+    webserver-rc   rcs/nginx-webserver-rc.yaml  RC       offline   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
+
+
 ## To Do
 
 - [x] Add app management (list of apps, check apps status)
