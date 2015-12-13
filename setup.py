@@ -28,5 +28,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pyk",
+        "tabulate"
     ],
 )

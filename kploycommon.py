@@ -46,3 +46,12 @@ def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
         else: return None
         res = pyk_client.describe_resource(res_url)
         logging.debug(res.json())
+
+def _check_status(pyk_client, resource_path):
+    """
+    Checks the status of a resources
+    """
+    res = pyk_client.describe_resource(resource_path)
+    logging.debug(res.json())
+    if res.status_code == 200: return "online"
+    else: return "offline"

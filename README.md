@@ -14,7 +14,10 @@ microservices-style applications with Kubernetes as simple and fast as possible.
 
 ## Dependencies
 
+All of the following are included in the setup:
+
 * The [pyk](https://github.com/mhausenblas/pyk) toolkit
+* Pretty-print tabular data with [tabulate](https://pypi.python.org/pypi/tabulate)
 
 ## Preparing your deployment
 
@@ -153,8 +156,8 @@ Note that I've used the following files for testing:
 
 ## To Do
 
+- [x] Add app management (list of apps, check apps status)
 - [ ] Add init command (creates Kployfile and placeholder RC and service file)
-- [ ] Add app management (list of apps, check apps status)
 - [ ] Add tear down command
 - [ ] Add dependency management
 - [ ] Add Travis build
