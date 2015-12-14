@@ -50,7 +50,7 @@ def cmd_dryrun():
         
         print("\n  CHECK: Is the Kubernetes cluster up & running and accessible via `%s`?" %(kploy["apiserver"]))
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
-        nodes = pyk_client.execute_operation(method='GET', ops_path='/api/v1/nodes')
+        nodes = pyk_client.execute_operation(method="GET", ops_path="/api/v1/nodes")
         if VERBOSE: logging.info("Got node list %s " %(util.serialize_tojson(nodes.json())))
         print("  \o/ ... I found %d node(s) to deploy your wonderful app onto." %(len(nodes.json()["items"])))
         
@@ -59,14 +59,14 @@ def cmd_dryrun():
             rcs = os.path.join(here, RC_DIR)
             logging.debug("Asserting %s exists" %(os.path.dirname(rcs)))
             assert os.path.exists(rcs)
-            rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
+            rc_manifests_confirmed = kploycommon._visit(rcs, "RC")
             print("         I found %s RC manifest(s) in %s" %(int(len(rc_manifests_confirmed)), os.path.dirname(rcs)))
             if VERBOSE: kploycommon._dump(rc_manifests_confirmed)
 
             services = os.path.join(here, SVC_DIR)
             logging.debug("Asserting %s exists" %(os.path.dirname(services)))
             assert os.path.exists(services)
-            svc_manifests_confirmed = kploycommon._visit(services, 'service')
+            svc_manifests_confirmed = kploycommon._visit(services, "service")
             print("         I found %s service manifest(s) in %s" %(int(len(svc_manifests_confirmed)), os.path.dirname(services)))
             if VERBOSE: kploycommon._dump(svc_manifests_confirmed)
             print("  \o/ ... I found both RC and service manifests to deploy your wonderful app!")
@@ -190,6 +190,54 @@ def cmd_destroy():
     print(80*"=")
     print("\nOK, I've destroyed `%s`\n" %(kploy["name"]))
 
+def cmd_stats():
+    """
+    Shows cluster utilization and provides summary of the pods' state, from the point of view of your app.
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if VERBOSE: logging.info("Providing stats for your app based on %s " %(kployfile))
+    try:
+        kploy, _  = util.load_yaml(filename=kployfile)
+        print("Stats for `%s`:" %(kploy["name"]))
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        # provide container summary:
+        print("\n[Your app's pods]\n")
+        pods = pyk_client.execute_operation(method="GET", ops_path="/api/v1/namespaces/default/pods?labelSelector=guard%3Dpyk")
+        pods_list = pods.json()["items"]
+        pod_details = []
+        used_nodes = []
+        for pod in pods_list:
+            if pod["status"]["hostIP"] not in used_nodes:
+                used_nodes.append(pod["status"]["hostIP"])
+            pod_details.append([
+                pod["metadata"]["name"],
+                pod["status"]["hostIP"],
+                pod["status"]["phase"],
+                "".join([kploy["apiserver"], pod["metadata"]["selfLink"]])
+            ])
+        print tabulate(pod_details, ["NAME", "HOST", "STATUS", "URL"], tablefmt="plain")
+        print("\n" + 80*"=")
+        # provide utilization info:
+        print("[Nodes used by your app]\n")
+        nodes = pyk_client.execute_operation(method="GET", ops_path="/api/v1/nodes")
+        nodes_list = nodes.json()["items"]
+        node_ips = []
+        for node in nodes_list:
+            if node["metadata"]["name"] in used_nodes:
+                node_ips.append([
+                    node["metadata"]["name"],
+                    node["status"]["nodeInfo"]["osImage"],
+                    node["status"]["nodeInfo"]["containerRuntimeVersion"],
+                    node["status"]["capacity"]["pods"] + ", " + node["status"]["capacity"]["cpu"] + ", " + node["status"]["capacity"]["memory"],
+                    "".join([kploy["apiserver"], node["metadata"]["selfLink"]])
+                ])
+        print tabulate(node_ips, ["IP", "HOST OS", "CONTAINER RUNTIME", "CAPACITY (PODS, CPU, MEM)", "URL"], tablefmt="plain")
+        print("\n" + 80*"=")
+    except (Error) as e:
+        print("Something went wrong:\n%s" %(e))
+        print("Consider validating your deployment with with `kploy dryrun` first!")
+        sys.exit(1)
 
 if __name__ == "__main__":
     try:
@@ -198,7 +246,8 @@ if __name__ == "__main__":
             "run" : cmd_run,
             "list": cmd_list,
             "init": cmd_init,
-            "destroy": cmd_destroy
+            "destroy": cmd_destroy,
+            "stats": cmd_stats
         }
 
         parser = argparse.ArgumentParser(

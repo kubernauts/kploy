@@ -101,14 +101,33 @@ To see how your app is doing, use the `list` command. All services and RCs of th
     $ ./kploy list
     Resources of `simple_app`:
     NAME           MANIFEST                     TYPE     STATUS    URL
-    webserver-svc  services/webserver-svc.yaml  service  offline   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
-    webserver-rc   rcs/nginx-webserver-rc.yaml  RC       offline   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
+    webserver-svc  services/webserver-svc.yaml  service  online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
+    webserver-rc   rcs/nginx-webserver-rc.yaml  RC       online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
 
 Hint: if you want to learn about any of the supported commands, simply add an `explain` before the command, for example:
 
     $ ./kploy explain list
     list:
         Lists apps and their status.
+
+If you want to learn more about how your app uses the cluster, use the `stats` command:
+
+    $ ./kploy stats
+    Stats for `simple_app`:
+
+    [Your app's pods]
+
+    NAME                HOST             STATUS    URL
+    webserver-rc-29pxj  167.114.218.157  Running   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/pods/webserver-rc-29pxj
+
+    ================================================================================
+    [Nodes used by your app]
+
+    IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU, MEM)    URL
+    167.114.218.157  CentOS Linux 7 (Core)  docker://1.8.2       40, 40, 256708Mi             http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/nodes/167.114.218.157
+
+    ================================================================================
+
 
 ## Tear down your app
 
@@ -126,8 +145,8 @@ To tear down your app, use the `destroy` command, for example:
 - [x] Add app management (list of apps, check apps status)
 - [x] Add init command (creates Kployfile and placeholder RC and service file)
 - [x] Add destroy command
-- [ ] Add stats command, showing utilization, containers state summary
+- [x] Add stats command, showing utilization, containers state summary
+- [ ] Add scale command
 - [ ] Add support for namespaces (field in Kployfile)
-- [ ] Add Travis build
 - [ ] Add deep validation for `dryrun` via validating RCs and services through API server
 - [ ] Add dependency management (via labels)
