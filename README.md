@@ -1,7 +1,7 @@
 # kploy
 
 [![version](https://img.shields.io/pypi/v/kploy.svg)](https://pypi.python.org/pypi/kploy/)
-[![downloads](https://img.shields.io/pypi/dm/kploy.svg)](https://pypi.python.org/pypi/kploy/")
+[![downloads](https://img.shields.io/pypi/dm/kploy.svg)](https://pypi.python.org/pypi/kploy/)
 [![build status](https://travis-ci.org/mhausenblas/kploy.svg?branch=master)](https://travis-ci.org/mhausenblas/kploy)
 
 Welcome to kploy, an opinionated Kubernetes deployment system for appops.
