@@ -1,5 +1,5 @@
 """
-The kploy commons (utility) functions
+The kploy commons (utility) functions.
 
 @author: Michael Hausenblas, http://mhausenblas.info/#i
 @since: 2015-12-12
@@ -12,8 +12,10 @@ import logging
 from pyk import toolkit
 from pyk import util
 
-
 def _fmt_cmds(cmds):
+    """
+    Formats the supported commands nicely.
+    """
     keys = sorted(cmds.keys())
     fk = "\n"
     for k in keys:
@@ -21,6 +23,10 @@ def _fmt_cmds(cmds):
     return fk
 
 def _connect(api_server, debug):
+    """
+    Tries to connect to cluster and ping it.
+    If successful it returns the Pyk client.
+    """
     try:
         pyk_client = toolkit.KubeHTTPClient(kube_version="1.1", api_server=api_server, debug=debug)
         pyk_client.execute_operation(method="GET", ops_path="/api/v1")
@@ -83,9 +89,16 @@ def _destroy(pyk_client, here, dir_name, alist, resource_name, verbose):
 
 def _check_status(pyk_client, resource_path):
     """
-    Checks the status of a resources
+    Checks the status of a resources.
     """
     res = pyk_client.describe_resource(resource_path)
     logging.debug(res.json())
     if res.status_code == 200: return "online"
     else: return "offline"
+
+def _own_resource(pyk_client, resource_path):
+    """
+    Labels a resource with `guard=pyk` so that it can be
+    selected with `?labelSelector=guard%3Dpyk`.
+    """
+    pass

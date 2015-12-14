@@ -140,13 +140,22 @@ To tear down your app, use the `destroy` command, for example:
     
     OK, I've destroyed `simple_app`
 
-## To Do
+## Planning
 
+### Roadmap
+
+- [ ] Add support for namespaces (field in Kployfile)
+- [ ] Add environment handling (Secrets, etc.) via additional sub-directory
+- [ ] Add debug command, implementing https://gist.github.com/mhausenblas/b74742ad10f756e680c5
+- [ ] Add scale command
+- [ ] Add support for Jobs
+- [ ] Add deep validation for `dryrun` via validating RCs and services through API server
+- [ ] Add dependency management (via labels)
+
+### Released
+
+- [x] MVP: dryrun and run
 - [x] Add app management (list of apps, check apps status)
 - [x] Add init command (creates Kployfile and placeholder RC and service file)
 - [x] Add destroy command
 - [x] Add stats command, showing utilization, containers state summary
-- [ ] Add scale command
-- [ ] Add support for namespaces (field in Kployfile)
-- [ ] Add deep validation for `dryrun` via validating RCs and services through API server
-- [ ] Add dependency management (via labels)
