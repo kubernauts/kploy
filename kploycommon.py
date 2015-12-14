@@ -22,8 +22,8 @@ def _fmt_cmds(cmds):
 
 def _connect(api_server, debug):
     try:
-        pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=api_server, debug=debug)
-        pyk_client.execute_operation(method='GET', ops_path='/api/v1')
+        pyk_client = toolkit.KubeHTTPClient(kube_version="1.1", api_server=api_server, debug=debug)
+        pyk_client.execute_operation(method="GET", ops_path="/api/v1")
     except:
         print("\nCan't connect to the Kubernetes cluster at %s\nCheck the `apiserver` setting in your Kployfile, your Internet connection or maybe it's a VPN issue?" %(api_server))
         sys.exit(1)
@@ -50,7 +50,7 @@ def _dump(alist):
 
 def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
     """
-    Deploys a resource based on a manifest. Currently the following resources are supported:
+    Deploys resources based on manifest files. Currently the following resources are supported:
     replication controllers, services.
     """
     for litem in alist:
@@ -63,6 +63,23 @@ def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
         else: return None
         res = pyk_client.describe_resource(res_url)
         logging.debug(res.json())
+
+def _destroy(pyk_client, here, dir_name, alist, resource_name, verbose):
+    """
+    Destroys resources based on manifest files. Currently the following resources are supported:
+    replication controllers, services.
+    """
+    for litem in alist:
+        if verbose: logging.info("Trying to destroy %s %s" %(resource_name, file_name))
+        file_name = os.path.join(os.path.join(here, dir_name), litem)
+        res_manifest, _  = util.load_yaml(filename=file_name)
+        res_name = res_manifest["metadata"]["name"]
+        if resource_name == "service":
+            res_path = "".join(["/api/v1/namespaces/default/services/", res_name])
+        elif resource_name == "RC":
+            res_path = "".join(["/api/v1/namespaces/default/replicationcontrollers/", res_name])
+        else: return None
+        pyk_client.delete_resource(resource_path=res_path)
 
 def _check_status(pyk_client, resource_path):
     """

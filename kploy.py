@@ -98,11 +98,11 @@ def cmd_run():
         kploycommon._deploy(pyk_client, here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
         kploycommon._deploy(pyk_client, here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
-        print("Something went wrong:\n%s" %(e))
+        print("Something went wrong deploying your app:\n%s" %(e))
         print("Consider validating your deployment with with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
-    print("\nOK, I've deployed `%s`\n" %(kploy["name"]))
+    print("\nOK, I've deployed `%s`.\nUse `kploy list` to check how it's doing." %(kploy["name"]))
 
 def cmd_list():
     """
@@ -110,6 +110,7 @@ def cmd_list():
     """
     here = os.path.dirname(os.path.realpath(__file__))
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if VERBOSE: logging.info("Listing resource status of app based on %s " %(kployfile))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
         print("Resources of `%s`:" %(kploy["name"]))
@@ -175,8 +176,15 @@ def cmd_destroy():
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        rc_manifests_confirmed, svc_manifests_confirmed = [], []
+        services = os.path.join(here, SVC_DIR)
+        rcs = os.path.join(here, RC_DIR)
+        svc_manifests_confirmed = kploycommon._visit(services, 'service')
+        rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
+        kploycommon._destroy(pyk_client, here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
+        kploycommon._destroy(pyk_client, here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
-        print("Something went wrong:\n%s" %(e))
+        print("Something went wrong destroying your app:\n%s" %(e))
         print("Consider validating your deployment with with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
@@ -199,6 +207,9 @@ if __name__ == "__main__":
         parser.add_argument("command", nargs="*", help="Currently supported commands are: %s and if you want to learn about a command, prepend `explain`, like: explain list " %(kploycommon._fmt_cmds(cmds)))
         parser.add_argument("-v", "--verbose", help="let me tell you every little dirty secret", action="store_true")
         args = parser.parse_args()
+        if len(args.command)==0:
+            parser.print_help()
+            sys.exit(0)
         if args.verbose:
             VERBOSE = True
         logging.debug("Got command `%s`" %(args))
@@ -209,9 +220,5 @@ if __name__ == "__main__":
             cmd = args.command[0]
             if cmd in cmds.keys():
                 cmds[cmd]()
-            else:
-                parser.print_help()
     except:
-        print("Ouch, that was an unknown command :(\n")
-        parser.print_help()
         sys.exit(1)
