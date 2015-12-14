@@ -13,6 +13,13 @@ from pyk import toolkit
 from pyk import util
 
 
+def _fmt_cmds(cmds):
+    keys = sorted(cmds.keys())
+    fk = "\n"
+    for k in keys:
+        fk += "`" + k + "`, "
+    return fk
+
 def _connect(api_server, debug):
     try:
         pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=api_server, debug=debug)

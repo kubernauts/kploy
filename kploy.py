@@ -164,25 +164,54 @@ def cmd_init():
     print(80*"=")
     print("\nOK, I've set up the %s deployment file and created necessary directories.\nNow edit the deployment file and copy manifests into the respective directories.\n" %(DEPLOYMENT_DESCRIPTOR))
 
+def cmd_destroy():
+    """
+    Destroys the app, removing all resources.
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if VERBOSE: logging.info("Trying to destroy app based on %s " %(kployfile))
+    try:
+        kploy, _  = util.load_yaml(filename=kployfile)
+        logging.debug(kploy)
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+    except (Error) as e:
+        print("Something went wrong:\n%s" %(e))
+        print("Consider validating your deployment with with `kploy dryrun` first!")
+        sys.exit(1)
+    print(80*"=")
+    print("\nOK, I've destroyed `%s`\n" %(kploy["name"]))
+
+
 if __name__ == "__main__":
     try:
         cmds = {
             "dryrun" : cmd_dryrun,
             "run" : cmd_run,
             "list": cmd_list,
-            "init": cmd_init
+            "init": cmd_init,
+            "destroy": cmd_destroy
         }
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("cmd", help="The currently supported commands are: %s" %(cmds.keys()))
+        parser = argparse.ArgumentParser(
+            description="kploy is an opinionated Kubernetes deployment system for appops",
+            epilog="Examples: `kploy init`, `kploy run`, `kploy list`, or to learn its usage: `kploy explain run`, `kploy explain list`, etc.")
+        parser.add_argument("command", nargs="*", help="Currently supported commands are: %s and if you want to learn about a command, prepend `explain`, like: explain list " %(kploycommon._fmt_cmds(cmds)))
         parser.add_argument("-v", "--verbose", help="let me tell you every little dirty secret", action="store_true")
         args = parser.parse_args()
         if args.verbose:
             VERBOSE = True
-        logging.debug("Got command `%s`" %(args.cmd))
-        if args.cmd in cmds.keys():
-            cmds[args.cmd]()
+        logging.debug("Got command `%s`" %(args))
+        if args.command[0] == "explain":
+            cmd = args.command[1]
+            print(cmd + ":" + cmds[cmd].__doc__)
         else:
-            parser.print_help()
+            cmd = args.command[0]
+            if cmd in cmds.keys():
+                cmds[cmd]()
+            else:
+                parser.print_help()
     except:
+        print("Ouch, that was an unknown command :(\n")
+        parser.print_help()
         sys.exit(1)
