@@ -16,8 +16,9 @@ from pyk import util
 def _connect(api_server, debug):
     try:
         pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=api_server, debug=debug)
+        pyk_client.execute_operation(method='GET', ops_path='/api/v1')
     except:
-        print("Can't connect to the Kubernetes cluster, check the `apiserver` setting in your Kployfile")
+        print("\nCan't connect to the Kubernetes cluster at %s\nCheck the `apiserver` setting in your Kployfile, your Internet connection or maybe it's a VPN issue?" %(api_server))
         sys.exit(1)
     return pyk_client
 

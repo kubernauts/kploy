@@ -49,14 +49,10 @@ def cmd_dryrun():
         print("Validating application `%s` ..." %(kploy["name"]))
         
         print("\n  CHECK: Is the Kubernetes cluster up & running and accessible via `%s`?" %(kploy["apiserver"]))
-        try:
-            pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=kploy["apiserver"], debug=DEBUG)
-            nodes = pyk_client.execute_operation(method='GET', ops_path='/api/v1/nodes')
-            if VERBOSE: logging.info("Got node list %s " %(util.serialize_tojson(nodes.json())))
-            print("  \o/ ... I found %d node(s) to deploy your wonderful app onto." %(len(nodes.json()["items"])))
-        except:
-            print("  :( ... I can't connect to the Kubernetes cluster, check the `apiserver` setting in your Kployfile")
-            sys.exit(1)
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        nodes = pyk_client.execute_operation(method='GET', ops_path='/api/v1/nodes')
+        if VERBOSE: logging.info("Got node list %s " %(util.serialize_tojson(nodes.json())))
+        print("  \o/ ... I found %d node(s) to deploy your wonderful app onto." %(len(nodes.json()["items"])))
         
         print("\n  CHECK: Are there RC and service manifests available around here?")
         try:
@@ -75,7 +71,7 @@ def cmd_dryrun():
             if VERBOSE: kploycommon._dump(svc_manifests_confirmed)
             print("  \o/ ... I found both RC and service manifests to deploy your wonderful app!")
         except:
-            print("  :( ... No RC and/or service manifests found to deploy your app.")
+            print("No RC and/or service manifests found to deploy your app. You can use `kploy init` to create missing artefacts.")
             sys.exit(1)
     except (IOError, IndexError, KeyError) as e:
         print("Something went wrong:\n%s" %(e))
@@ -93,7 +89,7 @@ def cmd_run():
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
-        pyk_client = toolkit.KubeHTTPClient(kube_version='1.1', api_server=kploy["apiserver"], debug=DEBUG)
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)

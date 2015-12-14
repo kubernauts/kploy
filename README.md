@@ -189,6 +189,8 @@ To see how your app is doing, use the `list` command. All services and RCs of th
 - [x] Add app management (list of apps, check apps status)
 - [x] Add init command (creates Kployfile and placeholder RC and service file)
 - [ ] Add tear down command
-- [ ] Add dependency management
+- [ ] Add stats command, showing utilization, containers state summary
+- [ ] Add support for namespaces (field in Kployfile)
 - [ ] Add Travis build
-- [ ] Add deep validation for `dryrun`, that is validate RCs and services via the API server
+- [ ] Add deep validation for `dryrun` via validating RCs and services through API server
+- [ ] Add dependency management (via labels)
