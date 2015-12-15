@@ -17,10 +17,7 @@
       <header>
         <h1>kploy</h1>
         <p>An opinionated Kubernetes deployment system for appops</p>
-
-        <p class="view"><a href="https://github.com/mhausenblas/kploy">View the Project on GitHub <small>mhausenblas/kploy</small></a></p>
-
-
+        <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" width="200px" alt="Kubernetes logo">
         <ul>
           <li><a href="https://github.com/mhausenblas/kploy/zipball/master">Download <strong>ZIP File</strong></a></li>
           <li><a href="https://github.com/mhausenblas/kploy/tarball/master">Download <strong>TAR Ball</strong></a></li>
@@ -29,15 +26,14 @@
       </header>
       <section>
         <p>We use convention over configuration in order to enable you to run microservices-style applications with Kubernetes as simple and fast as possible.</p>
-        <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast: 
-        <a href="http://www.youtube.com/watch?feature=player_embedded&amp;v=TJpucj4v4iE" target="_blank"><img src="http://img.youtube.com/vi/TJpucj4v4iE/0.jpg" alt="kploy demo" width="240" border="1" /></a></p>
-
-      <h2>Install</h2>
-      <p>You'll need Python 2.6 or above and then you can install kploy simply like so:</p>
+        <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
+        <div><a href="http://www.youtube.com/watch?feature=player_embedded&amp;v=TJpucj4v4iE" target="_blank"><img src="http://img.youtube.com/vi/TJpucj4v4iE/0.jpg" alt="kploy demo" width="240" border="1" /></a></div>
+        <h2>Install</h2>
+        <p>You'll need Python 2.6 or above and then you can install kploy simply like so:</p>
 <pre><code>pip install kploy</code></pre>
-      <p>Note that kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
-      <h2>Prepare your deployment</h2>
-      <p>Use the <code>init</code> command to create the required scaffolding:</p>
+        <p>Note that kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
+        <h2>Prepare your deployment</h2>
+        <p>Use the <code>init</code> command to create the required scaffolding:</p>
 <pre><code>$ ./kploy init
 ================================================================================
 
@@ -57,9 +53,9 @@ author: CHANGE_ME
 name: CHANGE_ME
 source: CHANGE_ME
 </code></pre>
-<p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
-<h2>Deploy your app</h2>
-<p>To validate your deployment use the <code>dryrun</code> command:</p>
+        <p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
+        <h2>Deploy your app</h2>
+        <p>To validate your deployment use the <code>dryrun</code> command:</p>
 <pre><code>$ ./kploy dryrun
 Validating application `test_app` ...
 
