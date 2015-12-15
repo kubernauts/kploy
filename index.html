@@ -27,10 +27,10 @@
         <p>The basic idea of kploy is to deploy and manage an app based on a collection of manifest files, such as Kubernetes service or replication controller manifests.
         With kploy you simply set up your app deployment descriptor and use convention over configuration in order to manage your app across the entire lifecycle.</p>
         <ul>
-          <li>Create a Kubernetes app from scratch: <code>kploy init</code> and copy manifest files over</li>
-          <li>Launch app: <code>kploy dryrun</code> and <code>kploy run</code></li>
-          <li>Monitor app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
-          <li>Destroy app and release resources: <code>kploy destroy</code></li>
+          <li>Create app from scratch: <a href="#init"><code>kploy init</code></a></li>
+          <li><a href="#run">Launch</a> app: <code>kploy dryrun</code> and <code>kploy run</code></li>
+          <li><a href="#manage">Monitor</a> app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
+          <li><a href="#destroy">Destroy</a> app and release resources: <code>kploy destroy</code></li>
         </ul>
         <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
@@ -44,7 +44,7 @@
         <p>Note that kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
       </section>
       <section>
-        <h2>Prepare your deployment</h2>
+        <h2 id="init">Prepare your deployment</h2>
         <p>Use the <code>init</code> command to create the required scaffolding:</p>
 <pre><code>$ ./kploy init
 ================================================================================
@@ -68,7 +68,7 @@ source: CHANGE_ME
         <p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
       </section>
       <section>
-        <h2>Deploy your app</h2>
+        <h2 id="run">Deploy your app</h2>
         <p>To validate your deployment use the <code>dryrun</code> command:</p>
 <pre><code>$ ./kploy dryrun
 Validating application `test_app` ...
@@ -96,7 +96,7 @@ Use `kploy list` to check how it's doing.
         <p>There you go, you just deployed an app on Kubernetes, with a single command. Well done!</p>
       </section>
       <section>
-        <h2>Manage your app</h2>
+        <h2 id="manage">Manage your app</h2>
         <p>To see how your app is doing, use the <code>list</code> command. All services and RCs of the app will be listed, along with their status
         (<code>online</code> means it&#8217;s deployed and running) and their resource URL:</p>
 <pre><code>$ ./kploy list
@@ -129,7 +129,7 @@ IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU
 </code></pre>
       </section>
       <section>
-        <h2>Tear down your app</h2>
+        <h2 id="destroy">Tear down your app</h2>
         <p>To tear down your app, use the <code>destroy</code> command, for example:</p>
 <pre><code>$ ./kploy destroy
 2015-12-14T10:23:42 Deleted resource /api/v1/namespaces/default/services/webserver-svc
