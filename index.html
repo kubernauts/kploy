@@ -22,10 +22,16 @@
       <section>
         <h2>Why bother?</h2>
         <p>Are you an <a href="https://medium.com/@mhausenblas/what-is-appops-why-do-i-care-what-i-do-about-it-b83a28b0eabc">appops</a>? 
-        Do you want to run microservices-style Kubernetes applications in a simple and as convinient way? Is the <code>kubectl</code> interface too low-level and feels too cumbersome to use?
+        Do you want to run microservices-style Kubernetes applications in a simple and convinient way? Is the <code>kubectl</code> interface too low-level and feels sorta cumbersome to use?
         <em>If you found yourself answering one of the above questions with a Yes, then read on.</em></p>
         <p>The basic idea of kploy is to deploy and manage an app based on a collection of manifest files, such as Kubernetes service or replication controller manifests.
         With kploy you simply set up your app deployment descriptor and use convention over configuration in order to manage your app across the entire lifecycle.</p>
+        <ul>
+          <li>Create a Kubernetes app from scratch: <code>kploy init</code> and copy manifest files over</li>
+          <li>Launch app: <code>kploy dryrun</code> and <code>kploy run</code></li>
+          <li>Monitor app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
+          <li>Destroy app and release resources: <code>kploy destroy</code></li>
+        </ul>
         <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
           <iframe width="420" height="315" src="https://www.youtube.com/embed/TJpucj4v4iE" frameborder="0" allowfullscreen></iframe>
