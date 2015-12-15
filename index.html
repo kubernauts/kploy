@@ -17,19 +17,22 @@
       <header>
         <h1>kploy</h1>
         <p>An opinionated Kubernetes deployment system for appops</p>
-        <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" width="150px" alt="Kubernetes logo" style="margin-bottom: 100px">
-        <ul>
-          <li><a href="https://github.com/mhausenblas/kploy/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/mhausenblas/kploy/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/mhausenblas/kploy">View On <strong>GitHub</strong></a></li>
-        </ul>
+        <a href="http://kubernetes.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" width="100px" alt="Kubernetes logo" style="margin-bottom: 100px"></a>
       </header>
       <section>
-        <p>We use convention over configuration in order to enable you to run microservices-style applications with Kubernetes as simple and fast as possible.</p>
+        <h2>What and Why?</h2>
+        <p>Are you an <a href="https://medium.com/@mhausenblas/what-is-appops-why-do-i-care-what-i-do-about-it-b83a28b0eabc">appops</a>? 
+        Do you want to run microservices-style Kubernetes applications in a simple and as convinient way?
+        Is the <code>kubectl</code> interface too low-level and feel too cumbersome to use?
+        If you found yourself answering one of the above questions with a Yes, then read on.</p>
+        <p>The basic idea of kploy is to deploy and manage an app based on a collection of manifest files, such as Kubernetes service or replication controller manifests.
+        With kploy you simply set up your app deployment descriptor and use convention over configuration in order to manage your app across the entire lifecycle.</p>
         <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
           <iframe width="420" height="315" src="https://www.youtube.com/embed/TJpucj4v4iE" frameborder="0" allowfullscreen></iframe>
         </div>
+      </section>
+      <section>
         <h2>Install</h2>
         <p>You'll need Python 2.6 or above and then you can install kploy simply like so:</p>
 <pre><code>pip install kploy</code></pre>
