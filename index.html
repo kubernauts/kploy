@@ -29,6 +29,101 @@
       </header>
       <section>
         <p>We use convention over configuration in order to enable you to run microservices-style applications with Kubernetes as simple and fast as possible.</p>
+        <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast: 
+        <a href="http://www.youtube.com/watch?feature=player_embedded&amp;v=TJpucj4v4iE" target="_blank"><img src="http://img.youtube.com/vi/TJpucj4v4iE/0.jpg" alt="kploy demo" width="240" border="1" /></a></p>
+
+      <h2>Install</h2>
+      <p>You'll need Python 2.6 or above and then you can install kploy simply like so:</p>
+<pre><code>pip install kploy</code></pre>
+      <p>Note that kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
+      <h2>Prepare your deployment</h2>
+      <p>Use the <code>init</code> command to create the required scaffolding:</p>
+<pre><code>$ ./kploy init
+================================================================================
+
+OK, I've set up the Kployfile deployment file and created necessary directories.
+Now edit the deployment file and copy manifests into the respective directories.
+
+$ ls -al
+drwxr-xr-x  10 mhausenblas  staff   748B 13 Dec 17:41 .
+drwxr-xr-x  23 mhausenblas  staff   816B  5 Dec 07:44 ..
+-rw-r--r--   1 mhausenblas  staff    85B 13 Dec 17:41 Kployfile
+drwxr-xr-x   2 mhausenblas  staff    68B 13 Dec 17:41 rcs
+drwxr-xr-x   2 mhausenblas  staff    68B 13 Dec 17:41 services
+
+$ cat Kployfile
+apiserver: http://localhost:8080
+author: CHANGE_ME
+name: CHANGE_ME
+source: CHANGE_ME
+</code></pre>
+<p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
+<h2>Deploy your app</h2>
+<p>To validate your deployment use the <code>dryrun</code> command:</p>
+<pre><code>$ ./kploy dryrun
+Validating application `test_app` ...
+
+  CHECK: Is the Kubernetes cluster up &amp; running and accessible via `http://52.10.201.177/service/kubernetes`?
+  \o/ ... I found 1 node(s) to deploy your wonderful app onto.
+
+  CHECK: Are there RC and service manifests available around here?
+         I found 1 RC manifest(s) in /Users/mhausenblas/Documents/repos/mhausenblas/kploy/rcs
+         I found 1 service manifest(s) in /Users/mhausenblas/Documents/repos/mhausenblas/kploy/services
+  \o/ ... I found both RC and service manifests to deploy your wonderful app!
+================================================================================
+
+OK, we're looking good! You're ready to deploy your app with `kploy run` now :)
+</code></pre>
+        <p>Looks fine, so to actually deploy your app, do:</p>
+<pre><code>$ ./kploy run
+2015-12-14T10:34:45 From /Users/mhausenblas/Documents/repos/mhausenblas/kploy/services/webserver-svc.yaml I created the service "webserver-svc" at /api/v1/namespaces/default/services/webserver-svc
+2015-12-14T10:34:46 From /Users/mhausenblas/Documents/repos/mhausenblas/kploy/rcs/nginx-webserver-rc.yaml I created the RC "webserver-rc" at /api/v1/namespaces/default/replicationcontrollers/webserver-rc
+================================================================================
+
+OK, I've deployed `simple_app`.
+Use `kploy list` to check how it's doing.
+</code></pre>
+        <p>There you go, you just deployed an app on Kubernetes, with a single command. Well done!</p>
+        <h2>Manage your app</h2>
+        <p>To see how your app is doing, use the <code>list</code> command. All services and RCs of the app will be listed, along with their status
+        (<code>online</code> means it&#8217;s deployed and running) and their resource URL:</p>
+<pre><code>$ ./kploy list
+Resources of `simple_app`:
+NAME           MANIFEST                     TYPE     STATUS    URL
+webserver-svc  services/webserver-svc.yaml  service  online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
+webserver-rc   rcs/nginx-webserver-rc.yaml  RC       online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
+</code></pre>
+        <p>Hint: if you want to learn about any of the supported commands, simply add an <code>explain</code> before the command, for example:</p>
+<pre><code>$ ./kploy explain list
+list:
+    Lists apps and their status.
+</code></pre>
+        <p>If you want to learn more about how your app uses the cluster, use the <code>stats</code> command:</p>
+<pre><code>$ ./kploy stats
+Stats for `simple_app`:
+
+[Your app's pods]
+
+NAME                HOST             STATUS    URL
+webserver-rc-29pxj  167.114.218.157  Running   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/pods/webserver-rc-29pxj
+
+================================================================================
+[Nodes used by your app]
+
+IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU, MEM)    URL
+167.114.218.157  CentOS Linux 7 (Core)  docker://1.8.2       40, 40, 256708Mi             http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/nodes/167.114.218.157
+
+================================================================================
+</code></pre>
+        <h2>Tear down your app</h2>
+        <p>To tear down your app, use the <code>destroy</code> command, for example:</p>
+<pre><code>$ ./kploy destroy
+2015-12-14T10:23:42 Deleted resource /api/v1/namespaces/default/services/webserver-svc
+2015-12-14T10:23:42 Deleted resource /api/v1/namespaces/default/replicationcontrollers/webserver-rc
+================================================================================
+
+OK, I've destroyed `simple_app`
+</code></pre>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/mhausenblas">mhausenblas</a></p>
