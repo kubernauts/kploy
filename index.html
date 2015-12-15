@@ -20,11 +20,10 @@
         <a href="http://kubernetes.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" width="100px" alt="Kubernetes logo" style="margin-bottom: 100px"></a>
       </header>
       <section>
-        <h2>What and Why?</h2>
+        <h2>Why bother?</h2>
         <p>Are you an <a href="https://medium.com/@mhausenblas/what-is-appops-why-do-i-care-what-i-do-about-it-b83a28b0eabc">appops</a>? 
-        Do you want to run microservices-style Kubernetes applications in a simple and as convinient way?
-        Is the <code>kubectl</code> interface too low-level and feel too cumbersome to use?
-        If you found yourself answering one of the above questions with a Yes, then read on.</p>
+        Do you want to run microservices-style Kubernetes applications in a simple and as convinient way? Is the <code>kubectl</code> interface too low-level and feels too cumbersome to use?
+        <em>If you found yourself answering one of the above questions with a Yes, then read on.</em></p>
         <p>The basic idea of kploy is to deploy and manage an app based on a collection of manifest files, such as Kubernetes service or replication controller manifests.
         With kploy you simply set up your app deployment descriptor and use convention over configuration in order to manage your app across the entire lifecycle.</p>
         <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
@@ -37,6 +36,8 @@
         <p>You'll need Python 2.6 or above and then you can install kploy simply like so:</p>
 <pre><code>pip install kploy</code></pre>
         <p>Note that kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
+      </section>
+      <section>
         <h2>Prepare your deployment</h2>
         <p>Use the <code>init</code> command to create the required scaffolding:</p>
 <pre><code>$ ./kploy init
@@ -59,6 +60,8 @@ name: CHANGE_ME
 source: CHANGE_ME
 </code></pre>
         <p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
+      </section>
+      <section>
         <h2>Deploy your app</h2>
         <p>To validate your deployment use the <code>dryrun</code> command:</p>
 <pre><code>$ ./kploy dryrun
@@ -85,6 +88,8 @@ OK, I've deployed `simple_app`.
 Use `kploy list` to check how it's doing.
 </code></pre>
         <p>There you go, you just deployed an app on Kubernetes, with a single command. Well done!</p>
+      </section>
+      <section>
         <h2>Manage your app</h2>
         <p>To see how your app is doing, use the <code>list</code> command. All services and RCs of the app will be listed, along with their status
         (<code>online</code> means it&#8217;s deployed and running) and their resource URL:</p>
@@ -116,6 +121,8 @@ IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU
 
 ================================================================================
 </code></pre>
+      </section>
+      <section>
         <h2>Tear down your app</h2>
         <p>To tear down your app, use the <code>destroy</code> command, for example:</p>
 <pre><code>$ ./kploy destroy
