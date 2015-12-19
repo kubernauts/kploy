@@ -154,8 +154,7 @@ To tear down your app, use the `destroy` command, for example:
 
 ### Released
 
-- [x] MVP: dryrun and run
-- [x] Add app management (list of apps, check apps status)
-- [x] Add init command (creates Kployfile and placeholder RC and service file)
-- [x] Add destroy command
-- [x] Add stats command, showing utilization, containers state summary
+- [x] With v0.3.1: Moved to Kubernauts org, new location is https://github.com/kubernauts/kploy 
+- [x] In v0.2: stats command, showing utilization, containers state summary and destroy command
+- [x] In v0.2: init command (creates Kployfile and placeholder RC and service file) and app management (list of apps, check apps status)
+- [x] In v0.1: dryrun and run
