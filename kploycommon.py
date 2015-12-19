@@ -102,3 +102,4 @@ def _own_resource(pyk_client, resource_path):
     selected with `?labelSelector=guard%3Dpyk`.
     """
     pass
+    # based on PATCH /api/v1/namespaces/{namespace}/pods/{name}
