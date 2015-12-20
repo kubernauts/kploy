@@ -31,7 +31,7 @@ It has to have at least the following entries (with `apiserver`, `name`, and `na
     apiserver: http://localhost:8080
     author: Your Name
     name: simple_app
-    namespace: myapp
+    namespace: myns
     source: https://github.com/yourusername/therepo
 
 Next, you create two sub-directories in `$KPLOY_DEMO_HOME`, called `rcs` and `services`.  Last but not least you copy your
@@ -70,7 +70,7 @@ Now you're ready to validate your deployment. Note that you can also use the `in
 To validate your deployment use the `dryrun` command:
 
     $ ./kploy dryrun
-    Validating application `test_app` ...
+    Validating application `myns/simple_app` ...
 
       CHECK: Is the Kubernetes cluster up & running and accessible via `http://52.10.201.177/service/kubernetes`?
       \o/ ... I found 1 node(s) to deploy your wonderful app onto.

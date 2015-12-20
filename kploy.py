@@ -106,7 +106,7 @@ def cmd_run():
         print("Consider validating your deployment with with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
-    print("\nOK, I've deployed `%s`.\nUse `kploy list` to check how it's doing." %(kploy["name"]))
+    print("\nOK, I've deployed `%s/%s`.\nUse `kploy list` and `kploy stats` to check how it's doing." %(kploy["namespace"], kploy["name"]))
 
 def cmd_list():
     """
