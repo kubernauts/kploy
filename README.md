@@ -93,6 +93,14 @@ Looks fine, so to actually deploy your app, do:
 
 There you go, you just deployed an app on Kubernetes, with a single command. Well done!
 
+Note that when `kploy run` is executed, the resources are marked an additional label `guard=pyk`:
+
+    labels:
+      ...
+      guard: pyk
+
+This label allows us to identify resources (RCs and services) that are managed by kploy. Do not manually remove them.
+
 ## Manage your app
 
 To see how your app is doing, use the `list` command. All services and RCs of the app will be listed, along with their status
@@ -127,7 +135,6 @@ If you want to learn more about how your app uses the cluster, use the `stats` c
     167.114.218.157  CentOS Linux 7 (Core)  docker://1.8.2       40, 40, 256708Mi             http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/nodes/167.114.218.157
 
     ================================================================================
-
 
 ## Tear down your app
 

@@ -63,11 +63,12 @@ def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
         file_name = os.path.join(os.path.join(here, dir_name), litem)
         if verbose: logging.info("Deploying %s %s" %(resource_name, file_name))
         if resource_name == "service":
-            _, res_url = pyk_client.create_svc(manifest_filename=file_name)
+            _, res_path = pyk_client.create_svc(manifest_filename=file_name)
         elif resource_name == "RC":
-            _, res_url = pyk_client.create_rc(manifest_filename=file_name)
-        else: return None
-        res = pyk_client.describe_resource(res_url)
+            _, res_path = pyk_client.create_rc(manifest_filename=file_name)
+        if verbose: logging.info("Now trying to own %s" %(res_path))
+        _own_resource(pyk_client, res_path, verbose)
+        res = pyk_client.describe_resource(res_path)
         logging.debug(res.json())
 
 def _destroy(pyk_client, here, dir_name, alist, resource_name, verbose):
@@ -96,10 +97,19 @@ def _check_status(pyk_client, resource_path):
     if res.status_code == 200: return "online"
     else: return "offline"
 
-def _own_resource(pyk_client, resource_path):
+def _own_resource(pyk_client, resource_path, verbose):
     """
     Labels a resource with `guard=pyk` so that it can be
     selected with `?labelSelector=guard%3Dpyk`.
     """
-    pass
-    # based on PATCH /api/v1/namespaces/{namespace}/pods/{name}
+    res = pyk_client.describe_resource(resource_path)
+    resource = res.json()
+    if "labels" in resource["metadata"]:
+        labels = resource["metadata"]["labels"]
+        print labels
+    else:
+        labels = {}
+    labels["guard"] = "pyk"
+    resource["metadata"]["labels"] = labels
+    if verbose: logging.info("Owning resource, now labeled with: %s" %(resource["metadata"]["labels"]))
+    pyk_client.execute_operation(method='PUT', ops_path=resource_path, payload=util.serialize_tojson(resource))
