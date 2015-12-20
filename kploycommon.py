@@ -8,6 +8,7 @@ The kploy commons (utility) functions.
 
 import os
 import logging
+import requests
 from time import sleep
 
 from pyk import toolkit
@@ -46,8 +47,16 @@ def _visit(dir_name, resource_name):
     logging.debug("Visiting %s" %dir_name)
     for _, _, file_names in os.walk(dir_name):
         for afile in file_names:
-            logging.debug("Detected %s %s" %(resource_name, afile))
-            flist.append(afile)
+            if not afile.endswith(".url"):
+                logging.debug("Detected %s %s" %(resource_name, afile))
+                flist.append(afile)
+            else:
+                remote_ref_file_name = os.path.join(dir_name, afile)
+                file_name = _deref_remote(remote_ref_file_name)
+                if not os.path.exists(file_name):
+                    file_name = _download_remote(remote_ref_file_name, do_cache=False)
+                logging.debug("Detected remote %s %s" %(resource_name, file_name))
+                flist.append(file_name)
     return flist
 
 def _dump(alist):
@@ -104,6 +113,8 @@ def _destroy(pyk_client, namespace, here, dir_name, alist, resource_name, verbos
     """
     for litem in alist:
         file_name = os.path.join(os.path.join(here, dir_name), litem)
+        if file_name.endswith(".url"):
+            file_name = _deref_remote(file_name)
         if verbose: logging.info("Trying to destroy %s %s" %(resource_name, file_name))
         res_manifest, _  = util.load_yaml(filename=file_name)
         res_name = res_manifest["metadata"]["name"]
@@ -145,6 +156,9 @@ def _own_resource(pyk_client, resource_path, verbose):
     pyk_client.execute_operation(method='PUT', ops_path=resource_path, payload=util.serialize_tojson(resource))
 
 def _create_ns(pyk_client, namespace, verbose):
+    """
+    Creates a new namespace, unless it's `default`.
+    """
     if namespace == "default":
         return
     else:
@@ -157,3 +171,24 @@ def _create_ns(pyk_client, namespace, verbose):
         ns["metadata"]["labels"]["guard"] = "pyk"
         if verbose: logging.info("Created namespace: %s" %(ns))
         pyk_client.execute_operation(method='POST', ops_path="/api/v1/namespaces", payload=util.serialize_tojson(ns))
+
+def _download_remote(remote_ref_file_name, do_cache=False):
+    """
+    Resolves a remote reference file by downloading its content.
+    """
+    remote_content = ""
+    real_file_name = _deref_remote(remote_ref_file_name)
+    with open(remote_ref_file_name, 'r') as remote_ref_file:
+        res_URL = remote_ref_file.read().strip()
+        remote_content = requests.get(res_URL).text
+        logging.debug(remote_content)
+    util.serialize_yaml_tofile(real_file_name, remote_content)
+    return real_file_name
+
+def _deref_remote(remote_ref_file_name):
+    """
+    Dereferences a remote file name: /path/to/abc.yaml.url -> /path/to/abc.yaml
+    """
+    real_file_name , _ = os.path.splitext(remote_ref_file_name)
+    logging.debug(real_file_name)
+    return real_file_name

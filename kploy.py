@@ -20,7 +20,7 @@ from pyk import toolkit
 from pyk import util
 
 
-DEBUG = False    # you can change that to enable debug messages ...
+DEBUG = True    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
 RC_DIR = "rcs/"
@@ -158,6 +158,7 @@ def cmd_init():
     ikploy = {}
     ikploy["apiserver"] = "http://localhost:8080"
     ikploy["author"] = "CHANGE_ME"
+    ikploy["cache_remotes"] = False
     ikploy["name"] = "CHANGE_ME"
     ikploy["namespace"] = "default"
     ikploy["source"] = "CHANGE_ME"

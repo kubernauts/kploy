@@ -26,10 +26,11 @@ All of the following are included in the setup:
 In the following I assume you're in a directory that we will call `$KPLOY_DEMO_HOME`, going forward.
 
 First you create a file `Kployfile` which must be formatted in [YAML](http://yaml.org/) and be located in `$KPLOY_DEMO_HOME`.
-It has to have at least the following entries (with `apiserver`, `name`, and `namespace` interpreted, right now):
+It has to have at least the following entries (with `apiserver`, `cache_remotes`, `name`, and `namespace` interpreted, right now):
 
     apiserver: http://localhost:8080
     author: Your Name
+    cache_remotes: False
     name: simple_app
     namespace: myns
     source: https://github.com/yourusername/therepo
@@ -64,6 +65,13 @@ Now you're ready to validate your deployment. Note that you can also use the `in
     name: CHANGE_ME
     namespace: default
     source: CHANGE_ME
+
+Note that you can also use URLs rather than manifests themselves: kploy will download these so called 'remotes' and via `cache_remotes` 
+in the `Kployfile` you can control when/how often this should take place. One use cases for remotes is to use [charts](https://github.com/helm/charts) from the [helm](http://helm.sh/) project, like so:
+
+    $ echo https://raw.githubusercontent.com/helm/charts/master/elasticsearch/manifests/elasticsearch-rc.yaml > rcs/elasticsearch-rc.yaml.url
+
+
 
 ## Deploy your app
 
