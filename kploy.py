@@ -46,7 +46,7 @@ def cmd_dryrun():
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
-        print("Validating application `%s` ..." %(kploy["name"]))
+        print("Validating application `%s/%s` ..." %(kploy["namespace"], kploy["name"]))
         
         print("\n  CHECK: Is the Kubernetes cluster up & running and accessible via `%s`?" %(kploy["apiserver"]))
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
@@ -90,13 +90,17 @@ def cmd_run():
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        # set up a namespace for this app:
+        kploycommon._create_ns(pyk_client, kploy["namespace"], VERBOSE)
+        # collect Services and RCs ...
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
         svc_manifests_confirmed = kploycommon._visit(services, 'service')
         rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
-        kploycommon._deploy(pyk_client, here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
-        kploycommon._deploy(pyk_client, here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
+        # ... and deploy them:
+        kploycommon._deploy(pyk_client, kploy["namespace"], here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
+        kploycommon._deploy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
         print("Something went wrong deploying your app:\n%s" %(e))
         print("Consider validating your deployment with with `kploy dryrun` first!")
@@ -113,7 +117,7 @@ def cmd_list():
     if VERBOSE: logging.info("Listing resource status of app based on %s " %(kployfile))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
-        print("Resources of `%s`:" %(kploy["name"]))
+        print("Resources of app `%s/%s`:" %(kploy["namespace"], kploy["name"]))
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
@@ -124,14 +128,14 @@ def cmd_list():
         for svc in svc_list:
             svc_manifest, _  = util.load_yaml(filename=os.path.join(here, SVC_DIR, svc))
             svc_name = svc_manifest["metadata"]["name"]
-            svc_path = "".join(["/api/v1/namespaces/default/services/", svc_name])
+            svc_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/services/", svc_name])
             svc_URL = "".join([kploy["apiserver"], svc_path])
             svc_status = kploycommon._check_status(pyk_client, svc_path)
             res_list.append([svc_name, os.path.join(SVC_DIR, svc), "service", svc_status, svc_URL])
         for rc in rc_list:
             rc_manifest, _  = util.load_yaml(filename=os.path.join(here, RC_DIR, rc))
             rc_name = rc_manifest["metadata"]["name"]
-            rc_path = "".join(["/api/v1/namespaces/default/replicationcontrollers/", rc_name])
+            rc_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/replicationcontrollers/", rc_name])
             rc_URL = "".join([kploy["apiserver"], rc_path])
             rc_status = kploycommon._check_status(pyk_client, rc_path)
             res_list.append([rc_name, os.path.join(RC_DIR, rc), "RC", rc_status, rc_URL])
@@ -155,6 +159,7 @@ def cmd_init():
     ikploy["apiserver"] = "http://localhost:8080"
     ikploy["author"] = "CHANGE_ME"
     ikploy["name"] = "CHANGE_ME"
+    ikploy["namespace"] = "default"
     ikploy["source"] = "CHANGE_ME"
     if VERBOSE: logging.info("%s" %(ikploy))
     util.serialize_yaml_tofile(kployfile, ikploy)
@@ -181,8 +186,8 @@ def cmd_destroy():
         rcs = os.path.join(here, RC_DIR)
         svc_manifests_confirmed = kploycommon._visit(services, 'service')
         rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
-        kploycommon._destroy(pyk_client, here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
-        kploycommon._destroy(pyk_client, here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
+        kploycommon._destroy(pyk_client, kploy["namespace"], here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
+        kploycommon._destroy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
         print("Something went wrong destroying your app:\n%s" %(e))
         print("Consider validating your deployment with with `kploy dryrun` first!")
@@ -199,12 +204,16 @@ def cmd_stats():
     if VERBOSE: logging.info("Providing stats for your app based on %s " %(kployfile))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
-        print("Stats for `%s`:" %(kploy["name"]))
+        print("Runtime stats for app `%s/%s`:" %(kploy["namespace"], kploy["name"]))
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         # provide container summary:
         print("\n[Your app's pods]\n")
-        pods = pyk_client.execute_operation(method="GET", ops_path="/api/v1/namespaces/default/pods?labelSelector=guard%3Dpyk")
+        guarded_pods_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/pods?labelSelector=guard%3Dpyk"])
+        pods = pyk_client.execute_operation(method="GET", ops_path=guarded_pods_path)
         pods_list = pods.json()["items"]
+        if not pods_list:
+            print "No pods are online. "
+            return
         pod_details = []
         used_nodes = []
         for pod in pods_list:

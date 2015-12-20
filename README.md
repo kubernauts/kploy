@@ -26,11 +26,12 @@ All of the following are included in the setup:
 In the following I assume you're in a directory that we will call `$KPLOY_DEMO_HOME`, going forward.
 
 First you create a file `Kployfile` which must be formatted in [YAML](http://yaml.org/) and be located in `$KPLOY_DEMO_HOME`.
-It has to have at least the following entries (only `apiserver` and `name` are interpreted right now):
+It has to have at least the following entries (with `apiserver`, `name`, and `namespace` interpreted, right now):
 
     apiserver: http://localhost:8080
     author: Your Name
-    name: test_app
+    name: simple_app
+    namespace: myapp
     source: https://github.com/yourusername/therepo
 
 Next, you create two sub-directories in `$KPLOY_DEMO_HOME`, called `rcs` and `services`.  Last but not least you copy your
@@ -61,6 +62,7 @@ Now you're ready to validate your deployment. Note that you can also use the `in
     apiserver: http://localhost:8080
     author: CHANGE_ME
     name: CHANGE_ME
+    namespace: default
     source: CHANGE_ME
 
 ## Deploy your app
@@ -107,7 +109,7 @@ To see how your app is doing, use the `list` command. All services and RCs of th
 (`online` means it's deployed and running) and their resource URL:
 
     $ ./kploy list
-    Resources of `simple_app`:
+    Resources of app `default/simple_app`:
     NAME           MANIFEST                     TYPE     STATUS    URL
     webserver-svc  services/webserver-svc.yaml  service  online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
     webserver-rc   rcs/nginx-webserver-rc.yaml  RC       online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
@@ -121,7 +123,7 @@ Hint: if you want to learn about any of the supported commands, simply add an `e
 If you want to learn more about how your app uses the cluster, use the `stats` command:
 
     $ ./kploy stats
-    Stats for `simple_app`:
+    Runtime stats for app `default/simple_app`:
 
     [Your app's pods]
 
@@ -151,7 +153,6 @@ To tear down your app, use the `destroy` command, for example:
 
 ### Roadmap
 
-- [ ] Add support for namespaces (field in Kployfile)
 - [ ] Add environment handling (Secrets, etc.) via additional sub-directory
 - [ ] Add debug command, implementing https://gist.github.com/mhausenblas/b74742ad10f756e680c5
 - [ ] Add scale command
@@ -161,6 +162,7 @@ To tear down your app, use the `destroy` command, for example:
 
 ### Released
 
+- [x] In v0.4: support for namespaces (field in Kployfile)
 - [x] With v0.3.1: Moved to Kubernauts org, new location is https://github.com/kubernauts/kploy 
 - [x] In v0.2: stats command, showing utilization, containers state summary and destroy command
 - [x] In v0.2: init command (creates Kployfile and placeholder RC and service file) and app management (list of apps, check apps status)

@@ -8,9 +8,12 @@ The kploy commons (utility) functions.
 
 import os
 import logging
+from time import sleep
 
 from pyk import toolkit
 from pyk import util
+
+PODS_UP_DELAY_IN_SEC = 5 # how long to wait before trying to own RC's pods
 
 def _fmt_cmds(cmds):
     """
@@ -54,7 +57,22 @@ def _dump(alist):
     for litem in alist:
         logging.info("-> %s" %litem)
 
-def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
+def _get_pods_of_rc(pyk_client, rc, namespace):
+    """
+    Retrieves a list of all pods a certain RC manages.
+    """
+    pods_selectors = rc["spec"]["selector"]
+    sel = ""
+    for k, v in pods_selectors.iteritems():
+        sel += "".join([k, "%3D", v , ","])
+    if sel.endswith(","):
+        sel = sel[:-1]
+    pods_of_rc_path = "".join(["/api/v1/namespaces/", namespace, "/pods?labelSelector=", sel])
+    pods = pyk_client.execute_operation(method="GET", ops_path=pods_of_rc_path)
+    pods_list = pods.json()["items"]
+    return pods_list
+
+def _deploy(pyk_client, namespace, here, dir_name, alist, resource_name, verbose):
     """
     Deploys resources based on manifest files. Currently the following resources are supported:
     replication controllers, services.
@@ -63,28 +81,41 @@ def _deploy(pyk_client, here, dir_name, alist, resource_name, verbose):
         file_name = os.path.join(os.path.join(here, dir_name), litem)
         if verbose: logging.info("Deploying %s %s" %(resource_name, file_name))
         if resource_name == "service":
-            _, res_path = pyk_client.create_svc(manifest_filename=file_name)
+            _, res_path = pyk_client.create_svc(manifest_filename=file_name, namespace=namespace)
         elif resource_name == "RC":
-            _, res_path = pyk_client.create_rc(manifest_filename=file_name)
+            _, res_path = pyk_client.create_rc(manifest_filename=file_name, namespace=namespace)
         if verbose: logging.info("Now trying to own %s" %(res_path))
         _own_resource(pyk_client, res_path, verbose)
         res = pyk_client.describe_resource(res_path)
         logging.debug(res.json())
+        # now make sure that a RC's pods are also owned:
+        if resource_name == "RC":
+            print("Waiting %d sec before looking for pods of RC %s" %(PODS_UP_DELAY_IN_SEC, res_path))
+            sleep(PODS_UP_DELAY_IN_SEC)
+            pods_list = _get_pods_of_rc(pyk_client, res.json(), namespace)
+            for pod in pods_list:
+                if verbose: logging.info("Now trying to own %s" %(pod["metadata"]["selfLink"]))
+                _own_resource(pyk_client, pod["metadata"]["selfLink"], verbose)
 
-def _destroy(pyk_client, here, dir_name, alist, resource_name, verbose):
+def _destroy(pyk_client, namespace, here, dir_name, alist, resource_name, verbose):
     """
     Destroys resources based on manifest files. Currently the following resources are supported:
     replication controllers, services.
     """
     for litem in alist:
-        if verbose: logging.info("Trying to destroy %s %s" %(resource_name, file_name))
         file_name = os.path.join(os.path.join(here, dir_name), litem)
+        if verbose: logging.info("Trying to destroy %s %s" %(resource_name, file_name))
         res_manifest, _  = util.load_yaml(filename=file_name)
         res_name = res_manifest["metadata"]["name"]
         if resource_name == "service":
-            res_path = "".join(["/api/v1/namespaces/default/services/", res_name])
+            res_path = "".join(["/api/v1/namespaces/", namespace, "/services/", res_name])
         elif resource_name == "RC":
-            res_path = "".join(["/api/v1/namespaces/default/replicationcontrollers/", res_name])
+            res_path = "".join(["/api/v1/namespaces/", namespace, "/replicationcontrollers/", res_name])
+            res = pyk_client.describe_resource(res_path)
+            resource = res.json()
+            resource["spec"]["replicas"] = 0
+            if verbose: logging.info("Scaling down RC %s to 0" %(res_path))
+            pyk_client.execute_operation(method='PUT', ops_path=res_path, payload=util.serialize_tojson(resource))
         else: return None
         pyk_client.delete_resource(resource_path=res_path)
 
@@ -106,10 +137,23 @@ def _own_resource(pyk_client, resource_path, verbose):
     resource = res.json()
     if "labels" in resource["metadata"]:
         labels = resource["metadata"]["labels"]
-        print labels
     else:
         labels = {}
     labels["guard"] = "pyk"
     resource["metadata"]["labels"] = labels
     if verbose: logging.info("Owning resource, now labeled with: %s" %(resource["metadata"]["labels"]))
     pyk_client.execute_operation(method='PUT', ops_path=resource_path, payload=util.serialize_tojson(resource))
+
+def _create_ns(pyk_client, namespace, verbose):
+    if namespace == "default":
+        return
+    else:
+        ns = {}
+        ns["kind"] = "Namespace"
+        ns["apiVersion"] = "v1"
+        ns["metadata"] = {}
+        ns["metadata"]["name"] = namespace
+        ns["metadata"]["labels"] = {}
+        ns["metadata"]["labels"]["guard"] = "pyk"
+        if verbose: logging.info("Created namespace: %s" %(ns))
+        pyk_client.execute_operation(method='POST', ops_path="/api/v1/namespaces", payload=util.serialize_tojson(ns))
