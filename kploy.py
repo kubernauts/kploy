@@ -20,7 +20,7 @@ from pyk import toolkit
 from pyk import util
 
 
-DEBUG = False    # you can change that to enable debug messages ...
+DEBUG = True    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
 RC_DIR = "rcs/"
@@ -59,14 +59,14 @@ def cmd_dryrun():
             rcs = os.path.join(here, RC_DIR)
             logging.debug("Asserting %s exists" %(os.path.dirname(rcs)))
             assert os.path.exists(rcs)
-            rc_manifests_confirmed = kploycommon._visit(rcs, "RC")
+            rc_manifests_confirmed = kploycommon._visit(rcs, "RC", cache_remotes=kploy["cache_remotes"])
             print("         I found %s RC manifest(s) in %s" %(int(len(rc_manifests_confirmed)), os.path.dirname(rcs)))
             if VERBOSE: kploycommon._dump(rc_manifests_confirmed)
 
             services = os.path.join(here, SVC_DIR)
             logging.debug("Asserting %s exists" %(os.path.dirname(services)))
             assert os.path.exists(services)
-            svc_manifests_confirmed = kploycommon._visit(services, "service")
+            svc_manifests_confirmed = kploycommon._visit(services, "service", cache_remotes=kploy["cache_remotes"])
             print("         I found %s service manifest(s) in %s" %(int(len(svc_manifests_confirmed)), os.path.dirname(services)))
             if VERBOSE: kploycommon._dump(svc_manifests_confirmed)
             print("  \o/ ... I found both RC and service manifests to deploy your wonderful app!")
@@ -96,8 +96,8 @@ def cmd_run():
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
-        svc_manifests_confirmed = kploycommon._visit(services, 'service')
-        rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
+        svc_manifests_confirmed = kploycommon._visit(services, 'service', cache_remotes=kploy["cache_remotes"])
+        rc_manifests_confirmed = kploycommon._visit(rcs, 'RC', cache_remotes=kploy["cache_remotes"])
         # ... and deploy them:
         kploycommon._deploy(pyk_client, kploy["namespace"], here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
         kploycommon._deploy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
@@ -122,8 +122,8 @@ def cmd_list():
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
-        svc_list = kploycommon._visit(services, 'service')
-        rc_list = kploycommon._visit(rcs, 'RC')
+        svc_list = kploycommon._visit(services, 'service', cache_remotes=True)
+        rc_list = kploycommon._visit(rcs, 'RC', cache_remotes=True)
         res_list = []
         for svc in svc_list:
             svc_manifest, _  = util.load_yaml(filename=os.path.join(here, SVC_DIR, svc))
@@ -185,8 +185,8 @@ def cmd_destroy():
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
-        svc_manifests_confirmed = kploycommon._visit(services, 'service')
-        rc_manifests_confirmed = kploycommon._visit(rcs, 'RC')
+        svc_manifests_confirmed = kploycommon._visit(services, 'service', cache_remotes=True)
+        rc_manifests_confirmed = kploycommon._visit(rcs, 'RC', cache_remotes=True)
         kploycommon._destroy(pyk_client, kploy["namespace"], here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
         kploycommon._destroy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:

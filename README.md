@@ -66,13 +66,6 @@ Now you're ready to validate your deployment. Note that you can also use the `in
     namespace: default
     source: CHANGE_ME
 
-Note that you can also use URLs rather than manifests themselves: kploy will download these so called 'remotes' and via `cache_remotes` 
-in the `Kployfile` you can control when/how often this should take place. One use cases for remotes is to use [charts](https://github.com/helm/charts) from the [helm](http://helm.sh/) project, like so:
-
-    $ echo https://raw.githubusercontent.com/helm/charts/master/elasticsearch/manifests/elasticsearch-rc.yaml > rcs/elasticsearch-rc.yaml.url
-
-
-
 ## Deploy your app
 
 To validate your deployment use the `dryrun` command:
@@ -102,6 +95,13 @@ Looks fine, so to actually deploy your app, do:
     Use `kploy list` to check how it's doing.
 
 There you go, you just deployed an app on Kubernetes, with a single command. Well done!
+
+You can also use URLs rather than manifests themselves: kploy will download these so called 'remotes' and via `cache_remotes` 
+in the `Kployfile` you can control when/how often this should take place. One use case for remotes is to use [charts](https://github.com/helm/charts) from the [helm](http://helm.sh/) project, like so:
+
+    $ echo https://raw.githubusercontent.com/helm/charts/master/elasticsearch/manifests/elasticsearch-rc.yaml > rcs/elasticsearch-rc.yaml.url
+
+The `cache_remotes` flag only applies to the `run` command, that is, all other commands such as `dryrun` or `list` will always work with the cached manifests.
 
 Note that when `kploy run` is executed, the resources are marked an additional label `guard=pyk`:
 

@@ -39,7 +39,7 @@ def _connect(api_server, debug):
         sys.exit(1)
     return pyk_client
 
-def _visit(dir_name, resource_name):
+def _visit(dir_name, resource_name, cache_remotes=False):
     """
     Walks a given directory and returns list of resource manifest files (in YAML format).
     It will also dereference and download remotes (manifest files that end in a `.url`).
@@ -56,13 +56,8 @@ def _visit(dir_name, resource_name):
                     logging.debug("Ignoring unknown file %s for now" %(afile))
             else: # we have a remote, for example, `abc.yaml.url`
                 remote_ref_file_name = os.path.join(dir_name, afile)
-                file_name = _deref_remote(remote_ref_file_name)
-                if not os.path.exists(file_name): # download remote if we don't have it locally yet
-                    file_name = _download_remote(remote_ref_file_name, do_cache=False)
-                    logging.debug("Got remote %s manifest %s" %(resource_name, file_name))
-                    flist.append(file_name)
-                else:
-                    logging.debug("Skipping remote %s manifest %s since I have it already" %(resource_name, file_name))
+                file_name = _download_remote(remote_ref_file_name, do_cache=cache_remotes)
+                logging.debug("Skipping remote %s manifest %s" %(resource_name, file_name))
     return flist
 
 def _dump(alist):
@@ -129,10 +124,13 @@ def _destroy(pyk_client, namespace, here, dir_name, alist, resource_name, verbos
         elif resource_name == "RC":
             res_path = "".join(["/api/v1/namespaces/", namespace, "/replicationcontrollers/", res_name])
             res = pyk_client.describe_resource(res_path)
-            resource = res.json()
-            resource["spec"]["replicas"] = 0
-            if verbose: logging.info("Scaling down RC %s to 0" %(res_path))
-            pyk_client.execute_operation(method='PUT', ops_path=res_path, payload=util.serialize_tojson(resource))
+            if res.status_code == 404:  # the replication controller is already gone
+                break                   # ... don't try to scale down
+            else:
+                resource = res.json()
+                resource["spec"]["replicas"] = 0
+                if verbose: logging.info("Scaling down RC %s to 0" %(res_path))
+                pyk_client.execute_operation(method='PUT', ops_path=res_path, payload=util.serialize_tojson(resource))
         else: return None
         pyk_client.delete_resource(resource_path=res_path)
 
@@ -184,13 +182,26 @@ def _download_remote(remote_ref_file_name, do_cache=False):
     """
     remote_content = ""
     real_file_name = _deref_remote(remote_ref_file_name)
+    if do_cache: # re-use local copies of remotes
+        if not os.path.exists(real_file_name): # download remote if we don't have it locally yet
+            print "Downloading %s since I do not have it locally" %real_file_name
+            _download_by_URL(remote_ref_file_name, real_file_name)
+        else: # don't download if there is already a local copy (use cached version)
+            logging.debug("Using cached version")
+    else: # always download remotes
+        _download_by_URL(remote_ref_file_name, real_file_name)
+    return real_file_name
+
+def _download_by_URL(remote_ref_file_name, real_file_name):
+    """
+    Downloads the content of a file by URL.
+    """
     with open(remote_ref_file_name, 'r') as remote_ref_file:
         res_URL = remote_ref_file.read().strip()
         remote_content = requests.get(res_URL).text
         logging.debug(remote_content)
     with open(real_file_name, "w") as real_file:
         real_file.write(remote_content)
-    return real_file_name
 
 def _deref_remote(remote_ref_file_name):
     """
