@@ -15,9 +15,10 @@
   <body>
     <div class="wrapper">
       <header>
+        <a href="http://kubernetes.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" width="100px" alt="Kubernetes logo" style="margin-bottom: 100px"></a>
         <h1>kploy</h1>
         <p>An opinionated Kubernetes deployment system for appops</p>
-        <a href="http://kubernetes.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo.png" width="100px" alt="Kubernetes logo" style="margin-bottom: 100px"></a>
+        <div><a href="https://github.com/kubernauts/kploy">GitHub</a></div>
       </header>
       <section>
         <h2>Why bother?</h2>
@@ -71,7 +72,7 @@ source: CHANGE_ME
         <h2 id="run">Deploy your app</h2>
         <p>To validate your deployment use the <code>dryrun</code> command:</p>
 <pre><code>$ ./kploy dryrun
-Validating application `test_app` ...
+Validating application `myns/simple_app` ...
 
   CHECK: Is the Kubernetes cluster up &amp; running and accessible via `http://52.10.201.177/service/kubernetes`?
   \o/ ... I found 1 node(s) to deploy your wonderful app onto.
@@ -94,13 +95,23 @@ OK, I've deployed `simple_app`.
 Use `kploy list` to check how it's doing.
 </code></pre>
         <p>There you go, you just deployed an app on Kubernetes, with a single command. Well done!</p>
+        <p>You can also use URLs rather than manifests themselves: kploy will download these so called
+        remotes and via <code>cache_remotes</code> in the Kployfile you can control when this should take place.
+        The `cache_remotes` flag only applies to the `run` command, that is, all other commands such as `dryrun` or `list` will always work with the cached manifests.
+        </p>
+        <p>One use case for remotes is to benefit from <a href="https://github.com/helm/charts">charts</a> (of the <a href="http://helm.sh/">helm</a> project), like so:</p>
+        
+<pre><code>$ echo https://raw.githubusercontent.com/helm/charts/master/elasticsearch/manifests/elasticsearch-rc.yaml > rcs/elasticsearch-rc.yaml.url</code></pre>
+      <p>Note that when <code>kploy run</code> is executed, the resources are marked with the additional label <code>guard=pyk</code>.
+      This label allows us to identify resources (RCs and services) that are managed by kploy. Do not manually remove them.
+      </p>
       </section>
       <section>
         <h2 id="manage">Manage your app</h2>
         <p>To see how your app is doing, use the <code>list</code> command. All services and RCs of the app will be listed, along with their status
         (<code>online</code> means it&#8217;s deployed and running) and their resource URL:</p>
 <pre><code>$ ./kploy list
-Resources of `simple_app`:
+Resources of app `myns/simple_app`:
 NAME           MANIFEST                     TYPE     STATUS    URL
 webserver-svc  services/webserver-svc.yaml  service  online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/services/webserver-svc
 webserver-rc   rcs/nginx-webserver-rc.yaml  RC       online   http://ma.dcos.ca1.mesosphere.com/service/kubernetes/api/v1/namespaces/default/replicationcontrollers/webserver-rc
@@ -112,7 +123,7 @@ list:
 </code></pre>
         <p>If you want to learn more about how your app uses the cluster, use the <code>stats</code> command:</p>
 <pre><code>$ ./kploy stats
-Stats for `simple_app`:
+Runtime stats for app `myns/simple_app`:
 
 [Your app's pods]
 
@@ -136,7 +147,7 @@ IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU
 2015-12-14T10:23:42 Deleted resource /api/v1/namespaces/default/replicationcontrollers/webserver-rc
 ================================================================================
 
-OK, I've destroyed `simple_app`
+OK, I've destroyed `myns/simple_app`
 </code></pre>
       </section>
       <footer>
