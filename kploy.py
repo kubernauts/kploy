@@ -194,7 +194,7 @@ def cmd_destroy():
         print("Consider validating your deployment with with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
-    print("\nOK, I've destroyed `%s`\n" %(kploy["name"]))
+    print("\nOK, I've destroyed `%s/%s`\n" %(kploy["namespace"], kploy["name"]))
 
 def cmd_stats():
     """
