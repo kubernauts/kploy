@@ -170,6 +170,7 @@ To tear down your app, use the `destroy` command, for example:
 
 ### Released
 
+- [x] In v0.5: simple support for helm charts via remotes
 - [x] In v0.4: support for namespaces (field in Kployfile)
 - [x] With v0.3.1: Moved to Kubernauts org, new location is https://github.com/kubernauts/kploy 
 - [x] In v0.2: stats command, showing utilization, containers state summary and destroy command
