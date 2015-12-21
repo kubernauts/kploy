@@ -182,7 +182,8 @@ def _download_remote(remote_ref_file_name, do_cache=False):
         res_URL = remote_ref_file.read().strip()
         remote_content = requests.get(res_URL).text
         logging.debug(remote_content)
-    util.serialize_yaml_tofile(real_file_name, remote_content)
+    with open(real_file_name, "w") as real_file:
+        real_file.write(remote_content)
     return real_file_name
 
 def _deref_remote(remote_ref_file_name):

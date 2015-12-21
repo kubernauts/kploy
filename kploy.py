@@ -20,7 +20,7 @@ from pyk import toolkit
 from pyk import util
 
 
-DEBUG = True    # you can change that to enable debug messages ...
+DEBUG = False    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
 RC_DIR = "rcs/"
