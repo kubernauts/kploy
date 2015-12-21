@@ -33,7 +33,7 @@
           <li><a href="#manage">Monitor</a> app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
           <li><a href="#destroy">Destroy</a> app and release resources: <code>kploy destroy</code></li>
         </ul>
-        <p>For a quick overview, check out the <a href="https://github.com/mhausenblas/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
+        <p>For a quick overview, check out the <a href="https://github.com/kubernauts/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
           <iframe width="420" height="315" src="https://www.youtube.com/embed/TJpucj4v4iE" frameborder="0" allowfullscreen></iframe>
         </div>
@@ -63,7 +63,9 @@ drwxr-xr-x   2 mhausenblas  staff    68B 13 Dec 17:41 services
 $ cat Kployfile
 apiserver: http://localhost:8080
 author: CHANGE_ME
+cache_remotes: False
 name: CHANGE_ME
+namespace: default
 source: CHANGE_ME
 </code></pre>
         <p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
