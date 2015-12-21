@@ -41,22 +41,28 @@ def _connect(api_server, debug):
 
 def _visit(dir_name, resource_name):
     """
-    Walks a given directory and return list of files in there.
+    Walks a given directory and returns list of resource manifest files (in YAML format).
+    It will also dereference and download remotes (manifest files that end in a `.url`).
     """
     flist = []
     logging.debug("Visiting %s" %dir_name)
     for _, _, file_names in os.walk(dir_name):
         for afile in file_names:
-            if not afile.endswith(".url"):
-                logging.debug("Detected %s %s" %(resource_name, afile))
-                flist.append(afile)
-            else:
+            if not afile.endswith(".url"): # potentially a manifest
+                if afile.endswith(".yaml"): # for now only YAML files are interpreted as valid input format
+                    logging.debug("Got %s manifest %s" %(resource_name, afile))
+                    flist.append(afile)
+                else:
+                    logging.debug("Ignoring unknown file %s for now" %(afile))
+            else: # we have a remote, for example, `abc.yaml.url`
                 remote_ref_file_name = os.path.join(dir_name, afile)
                 file_name = _deref_remote(remote_ref_file_name)
-                if not os.path.exists(file_name):
+                if not os.path.exists(file_name): # download remote if we don't have it locally yet
                     file_name = _download_remote(remote_ref_file_name, do_cache=False)
-                logging.debug("Detected remote %s %s" %(resource_name, file_name))
-                flist.append(file_name)
+                    logging.debug("Got remote %s manifest %s" %(resource_name, file_name))
+                    flist.append(file_name)
+                else:
+                    logging.debug("Skipping remote %s manifest %s since I have it already" %(resource_name, file_name))
     return flist
 
 def _dump(alist):
