@@ -20,7 +20,7 @@ from pyk import toolkit
 from pyk import util
 
 
-DEBUG = True    # you can change that to enable debug messages ...
+DEBUG = False    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
 RC_DIR = "rcs/"
@@ -252,13 +252,15 @@ def cmd_stats():
 def cmd_export():
     """
     Creates an archive of all relevant app files, incl. Kployfile and manifest directories.
+    You can use the resulting archive then with `kploy init` to bootstrap you app in a different location.
     """
     here = os.path.dirname(os.path.realpath(__file__))
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Exporting app based on content from %s " %(here))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
-        print("Content of app `%s/%s`:" %(kploy["namespace"], kploy["name"]))
+        archive_filename, archive_file = kploycommon._export_init(here, DEPLOYMENT_DESCRIPTOR, kploy["name"])
+        print("Adding content of app `%s/%s` to %s" %(kploy["namespace"], kploy["name"], archive_filename))
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
@@ -266,9 +268,12 @@ def cmd_export():
         rc_list = kploycommon._visit(rcs, 'RC', cache_remotes=True)
         res_list = []
         for svc in svc_list:
-            svc_file_name = os.path.join(here, SVC_DIR, svc)
+            svc_file_name = os.path.join(SVC_DIR, svc)
+            kploycommon._export_add(archive_file, svc_file_name)
         for rc in rc_list:
-            rc_file_name = os.path.join(here, RC_DIR, rc)
+            rc_file_name = os.path.join(RC_DIR, rc)
+            kploycommon._export_add(archive_file, rc_file_name)
+        kploycommon._export_done(archive_file)
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")

@@ -9,12 +9,14 @@ The kploy commons (utility) functions.
 import os
 import logging
 import requests
+import zipfile
 from time import sleep
 
 from pyk import toolkit
 from pyk import util
 
 PODS_UP_DELAY_IN_SEC = 5 # how long to wait before trying to own RC's pods
+EXPORT_EXT = ".kploy"
 
 def _fmt_cmds(cmds):
     """
@@ -210,3 +212,28 @@ def _deref_remote(remote_ref_file_name):
     real_file_name , _ = os.path.splitext(remote_ref_file_name)
     logging.debug(real_file_name)
     return real_file_name
+
+def _export_init(here, deployment_descriptor, appname):
+    """
+    Creates the archive file to export the app into.
+    """
+    archive_filename = "".join([appname, EXPORT_EXT])
+    kployfile = deployment_descriptor
+    logging.debug("Trying to create app archive %s" %(archive_filename))
+    archive_file = zipfile.ZipFile(archive_filename, mode='w')
+    logging.debug("Trying to add deployment descriptor %s" %(kployfile))
+    archive_file.write(kployfile)
+    return (archive_filename, archive_file)
+
+def _export_add(archive_file, filename):
+    """
+    Adds a file to the app archive.
+    """
+    logging.debug("Trying to add %s to app archive" %(filename))
+    archive_file.write(filename)
+
+def _export_done(archive_file):
+    """
+    Wraps up app archive generation
+    """
+    archive_file.close()
