@@ -16,7 +16,6 @@ from pyk import toolkit
 from pyk import util
 
 PODS_UP_DELAY_IN_SEC = 5 # how long to wait before trying to own RC's pods
-EXPORT_EXT = ".kploy"
 
 def _fmt_cmds(cmds):
     """
@@ -213,11 +212,10 @@ def _deref_remote(remote_ref_file_name):
     logging.debug(real_file_name)
     return real_file_name
 
-def _export_init(here, deployment_descriptor, appname):
+def _export_init(here, deployment_descriptor, archive_filename):
     """
     Creates the archive file to export the app into.
     """
-    archive_filename = "".join([appname, EXPORT_EXT])
     kployfile = deployment_descriptor
     logging.debug("Trying to create app archive %s" %(archive_filename))
     archive_file = zipfile.ZipFile(archive_filename, mode='w')
@@ -237,3 +235,20 @@ def _export_done(archive_file):
     Wraps up app archive generation
     """
     archive_file.close()
+
+def _init_from_archive(archive_filename):
+    """
+    Creates a deployment from a given archive file.
+    """
+    if zipfile.is_zipfile(archive_filename):
+        archive_file = zipfile.ZipFile(archive_filename, mode='r')
+        files = archive_file.namelist()
+        logging.debug("Found the following in the archive: %s" %(files))
+        for file in files:
+            try:
+                data = archive_file.read(file)
+                with open(file, "w") as f:
+                    f.write(data)
+                logging.debug("Created %s" %(file))
+            except KeyError:
+                logging.debug("Did not find %s in archive" %(file))

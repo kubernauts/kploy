@@ -21,6 +21,7 @@ All of the following are included in the setup:
 
 ## Releases
 
+- [x] In v0.6: export command (result is imported when doing `kploy init`)
 - [x] In v0.5: simple support for helm charts via remotes
 - [x] In v0.4: support for namespaces (field in Kployfile)
 - [x] In v0.3: moved to Kubernauts org, new location is https://github.com/kubernauts/kploy 
@@ -30,7 +31,6 @@ All of the following are included in the setup:
 
 ## Roadmap
 
-- [ ] Add export command (result can be imported with `myexampleapp.kploy` in CWD when doing `kploy init`)
 - [ ] Add environment handling (Secrets, etc.) via additional sub-directory
 - [ ] Add debug command, implementing https://gist.github.com/mhausenblas/b74742ad10f756e680c5
 - [ ] Add scale command

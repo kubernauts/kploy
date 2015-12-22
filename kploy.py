@@ -23,6 +23,7 @@ from pyk import util
 DEBUG = False    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
+EXPORT_ARCHIVE_FILENAME = "app.kploy"
 RC_DIR = "rcs/"
 SVC_DIR = "services/"
 
@@ -151,25 +152,32 @@ def cmd_init():
     """    
     here = os.path.dirname(os.path.realpath(__file__))
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    archivefile = os.path.join(here, EXPORT_ARCHIVE_FILENAME)
     if os.path.exists(kployfile):
         print("Hey! %s already exists.\nI'm not going to destroy existing work. #kthxbye" %(kployfile))
         sys.exit(1)
-    if VERBOSE: logging.info("Setting up app %s " %(kployfile))
-    ikploy = {}
-    ikploy["apiserver"] = "http://localhost:8080"
-    ikploy["author"] = "CHANGE_ME"
-    ikploy["cache_remotes"] = False
-    ikploy["name"] = "CHANGE_ME"
-    ikploy["namespace"] = "default"
-    ikploy["source"] = "CHANGE_ME"
-    if VERBOSE: logging.info("%s" %(ikploy))
-    util.serialize_yaml_tofile(kployfile, ikploy)
     if not os.path.exists(SVC_DIR):
         os.makedirs(SVC_DIR)
     if not os.path.exists(RC_DIR):
         os.makedirs(RC_DIR)
-    print(80*"=")
-    print("\nOK, I've set up the %s deployment file and created necessary directories.\nNow edit the deployment file and copy manifests into the respective directories.\n" %(DEPLOYMENT_DESCRIPTOR))
+    if os.path.exists(archivefile): # set up via archive
+        if VERBOSE: logging.info("Detected archive %s" %(archivefile))
+        kploycommon._init_from_archive(archivefile)
+        print(80*"=")
+        print("\nOK, I've set up the deployment from archive.\nYou can now validate it with `kploy dryrun`\n")
+    else: # create from scratch
+        if VERBOSE: logging.info("Setting up app %s " %(kployfile))
+        ikploy = {}
+        ikploy["apiserver"] = "http://localhost:8080"
+        ikploy["author"] = "CHANGE_ME"
+        ikploy["cache_remotes"] = False
+        ikploy["name"] = "CHANGE_ME"
+        ikploy["namespace"] = "default"
+        ikploy["source"] = "CHANGE_ME"
+        if VERBOSE: logging.info("%s" %(ikploy))
+        util.serialize_yaml_tofile(kployfile, ikploy)
+        print(80*"=")
+        print("\nOK, I've set up the %s deployment file and created necessary directories.\nNow edit the deployment file and copy manifests into the respective directories.\n" %(DEPLOYMENT_DESCRIPTOR))
 
 def cmd_destroy():
     """
@@ -259,7 +267,7 @@ def cmd_export():
     if VERBOSE: logging.info("Exporting app based on content from %s " %(here))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
-        archive_filename, archive_file = kploycommon._export_init(here, DEPLOYMENT_DESCRIPTOR, kploy["name"])
+        archive_filename, archive_file = kploycommon._export_init(here, DEPLOYMENT_DESCRIPTOR, EXPORT_ARCHIVE_FILENAME)
         print("Adding content of app `%s/%s` to %s" %(kploy["namespace"], kploy["name"], archive_filename))
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
@@ -297,7 +305,7 @@ if __name__ == "__main__":
         parser.add_argument("command", nargs="*", help="Currently supported commands are: %s and if you want to learn about a command, prepend `explain`, like: explain list " %(kploycommon._fmt_cmds(cmds)))
         parser.add_argument("-v", "--verbose", help="let me tell you every little dirty secret", action="store_true")
         args = parser.parse_args()
-        if len(args.command)==0:
+        if len(args.command) == 0:
             parser.print_help()
             sys.exit(0)
         if args.verbose:
