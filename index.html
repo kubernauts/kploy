@@ -28,10 +28,11 @@
         <p>The basic idea of kploy is to deploy and manage an app based on a collection of manifest files, such as Kubernetes service or replication controller manifests.
         With kploy you simply set up your app deployment descriptor and use convention over configuration in order to manage your app across the entire lifecycle.</p>
         <ul>
-          <li><a href="#init">Create</a> app from scratch: <code>kploy init</code></li>
+          <li><a href="#init">Create</a> app from scratch or from archive: <code>kploy init</code></li>
           <li><a href="#run">Launch</a> app: <code>kploy dryrun</code> and <code>kploy run</code></li>
           <li><a href="#manage">Monitor</a> app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
           <li><a href="#destroy">Destroy</a> app and release resources: <code>kploy destroy</code></li>
+          <li><a href="#export">Export</a> app<code>kploy export</code></li>
         </ul>
         <p>For a quick overview, check out the <a href="https://github.com/kubernauts/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
@@ -68,7 +69,31 @@ name: CHANGE_ME
 namespace: default
 source: CHANGE_ME
 </code></pre>
-        <p>Change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
+        <p>In the above Kployfile, change at least the <code>apiserver</code> field to point it to the API Server of your Kubernetes cluster.</p>
+        <p>Alternatively, you can create an app from an existing archive. By convention the ZIP archive must be called
+        <code>app.kploy</code> in order to be recognized when you execute the <code>init</code> command:
+        </p>
+<pre><code>$ ls -al
+drwxr-xr-x  8 mhausenblas  staff   714B 22 Dec 13:28 .
+drwxr-xr-x  6 mhausenblas  staff   238B 21 Dec 13:58 ..
+-rw-r--r--  1 mhausenblas  staff   1.0K 22 Dec 12:10 app.kploy
+
+$ ./kploy init -v
+2015-12-22T01:40:49 Detected archive /Users/mhausenblas/Documents/repos/kubernauts/kploy/app.kploy
+================================================================================
+
+OK, I've set up the deployment from archive.
+You can now validate it with `kploy dryrun`
+
+$ ls -al
+drwxr-xr-x  8 mhausenblas  staff   714B 22 Dec 13:40 .
+drwxr-xr-x  6 mhausenblas  staff   238B 21 Dec 13:58 ..
+-rw-r--r--  1 mhausenblas  staff   174B 22 Dec 13:40 Kployfile
+-rw-r--r--  1 mhausenblas  staff   1.0K 22 Dec 12:10 app.kploy
+drwxr-xr-x  2 mhausenblas  staff   102B 22 Dec 13:40 rcs
+drwxr-xr-x  2 mhausenblas  staff   102B 22 Dec 13:40 services
+</code></pre>
+        
       </section>
       <section>
         <h2 id="run">Deploy your app</h2>
@@ -150,6 +175,14 @@ IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU
 ================================================================================
 
 OK, I've destroyed `myns/simple_app`
+</code></pre>
+      </section>
+        <h2 id="export">Export your app</h2>
+        <p>To create a snapshot of your app use the <code>export</code> command. This creates an archivecalled
+        <code>app.kploy</code> that you then can use with the <code>init</code> command to create the app in a different location.</p>
+<pre><code>$ ./kploy export -v
+2015-12-22T01:47:18 Exporting app based on content from /Users/mhausenblas/Documents/repos/kubernauts/kploy
+Adding content of app `myns/simple_app` to app.kploy
 </code></pre>
       </section>
       <footer>
