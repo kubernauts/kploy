@@ -32,7 +32,7 @@
           <li><a href="#run">Launch</a> app: <code>kploy dryrun</code> and <code>kploy run</code></li>
           <li><a href="#manage">Monitor</a> app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
           <li><a href="#destroy">Destroy</a> app and release resources: <code>kploy destroy</code></li>
-          <li><a href="#export">Export</a> app<code>kploy export</code></li>
+          <li><a href="#export">Export</a> app: <code>kploy export</code></li>
         </ul>
         <p>For a quick overview, check out the <a href="https://github.com/kubernauts/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
@@ -177,6 +177,7 @@ IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU
 OK, I've destroyed `myns/simple_app`
 </code></pre>
       </section>
+      <section>
         <h2 id="export">Export your app</h2>
         <p>To create a snapshot of your app use the <code>export</code> command. This creates an archivecalled
         <code>app.kploy</code> that you then can use with the <code>init</code> command to create the app in a different location.</p>
