@@ -103,7 +103,7 @@ def cmd_run():
         kploycommon._deploy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
         print("Something went wrong deploying your app:\n%s" %(e))
-        print("Consider validating your deployment with with `kploy dryrun` first!")
+        print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
     print("\nOK, I've deployed `%s/%s`.\nUse `kploy list` and `kploy stats` to check how it's doing." %(kploy["namespace"], kploy["name"]))
@@ -142,7 +142,7 @@ def cmd_list():
         print tabulate(res_list, ["NAME", "MANIFEST", "TYPE", "STATUS", "URL"], tablefmt="plain")
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))
-        print("Consider validating your deployment with with `kploy dryrun` first!")
+        print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
 
 def cmd_init():
@@ -191,7 +191,7 @@ def cmd_destroy():
         kploycommon._destroy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
     except (Error) as e:
         print("Something went wrong destroying your app:\n%s" %(e))
-        print("Consider validating your deployment with with `kploy dryrun` first!")
+        print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
     print("\nOK, I've destroyed `%s/%s`\n" %(kploy["namespace"], kploy["name"]))
@@ -246,7 +246,32 @@ def cmd_stats():
         print("\n" + 80*"=")
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))
-        print("Consider validating your deployment with with `kploy dryrun` first!")
+        print("Consider validating your deployment with `kploy dryrun` first!")
+        sys.exit(1)
+
+def cmd_export():
+    """
+    Creates an archive of all relevant app files, incl. Kployfile and manifest directories.
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    if VERBOSE: logging.info("Exporting app based on content from %s " %(here))
+    try:
+        kploy, _  = util.load_yaml(filename=kployfile)
+        print("Content of app `%s/%s`:" %(kploy["namespace"], kploy["name"]))
+        rc_manifests_confirmed, svc_manifests_confirmed = [], []
+        services = os.path.join(here, SVC_DIR)
+        rcs = os.path.join(here, RC_DIR)
+        svc_list = kploycommon._visit(services, 'service', cache_remotes=True)
+        rc_list = kploycommon._visit(rcs, 'RC', cache_remotes=True)
+        res_list = []
+        for svc in svc_list:
+            svc_file_name = os.path.join(here, SVC_DIR, svc)
+        for rc in rc_list:
+            rc_file_name = os.path.join(here, RC_DIR, rc)
+    except (Error) as e:
+        print("Something went wrong:\n%s" %(e))
+        print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -257,7 +282,8 @@ if __name__ == "__main__":
             "list": cmd_list,
             "init": cmd_init,
             "destroy": cmd_destroy,
-            "stats": cmd_stats
+            "stats": cmd_stats,
+            "export": cmd_export
         }
 
         parser = argparse.ArgumentParser(

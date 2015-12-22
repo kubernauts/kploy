@@ -30,11 +30,10 @@ All of the following are included in the setup:
 
 ## Roadmap
 
+- [ ] Add export command (result can be imported with `myexampleapp.kploy` in CWD when doing `kploy init`)
 - [ ] Add environment handling (Secrets, etc.) via additional sub-directory
 - [ ] Add debug command, implementing https://gist.github.com/mhausenblas/b74742ad10f756e680c5
 - [ ] Add scale command
 - [ ] Add support for Jobs
-- [ ] Add deep validation for `dryrun` via validating RCs and services through API server
-- [ ] Add dependency management (via labels)
 
 See also the [issue](https://github.com/kubernauts/kploy/issues) list for further planned features.
