@@ -94,10 +94,9 @@ def cmd_run():
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
-        # set up a namespace for this app:
+        # set up a Namespace for this app:
         kploycommon._create_ns(pyk_client, kploy["namespace"], VERBOSE)
-
-        # set up a secrets for this app:
+        # set up a Secrets for this app:
         env = os.path.join(here, ENV_DIR)
         secrets = {}
         logging.debug("Visiting %s" %env)
@@ -114,7 +113,6 @@ def cmd_run():
                     logging.debug("Secret base64 encoded data: %s" %(val))
                     secrets[key] = val
         kploycommon._create_secrets(pyk_client, kploy["name"], kploy["namespace"], secrets, VERBOSE)
-
         # collect Services and RCs ...
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
@@ -133,14 +131,14 @@ def cmd_run():
 
 def cmd_list():
     """
-    Lists apps and their status.
+    Lists app resources and their status.
     """
     here = os.path.dirname(os.path.realpath(__file__))
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Listing resource status of app based on %s " %(kployfile))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
-        print("Resources of app `%s/%s`:" %(kploy["namespace"], kploy["name"]))
+        print("Resources of app `%s/%s`:\n" %(kploy["namespace"], kploy["name"]))
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
@@ -148,6 +146,8 @@ def cmd_list():
         svc_list = kploycommon._visit(services, 'service', cache_remotes=True)
         rc_list = kploycommon._visit(rcs, 'RC', cache_remotes=True)
         res_list = []
+        # gather Services status:
+        print("[Services and RCs]\n")
         for svc in svc_list:
             svc_manifest, _  = util.load_yaml(filename=os.path.join(here, SVC_DIR, svc))
             svc_name = svc_manifest["metadata"]["name"]
@@ -155,6 +155,7 @@ def cmd_list():
             svc_URL = "".join([kploy["apiserver"], svc_path])
             svc_status = kploycommon._check_status(pyk_client, svc_path)
             res_list.append([svc_name, os.path.join(SVC_DIR, svc), "service", svc_status, svc_URL])
+        # gather RC status:
         for rc in rc_list:
             rc_manifest, _  = util.load_yaml(filename=os.path.join(here, RC_DIR, rc))
             rc_name = rc_manifest["metadata"]["name"]
@@ -162,7 +163,20 @@ def cmd_list():
             rc_URL = "".join([kploy["apiserver"], rc_path])
             rc_status = kploycommon._check_status(pyk_client, rc_path)
             res_list.append([rc_name, os.path.join(RC_DIR, rc), "RC", rc_status, rc_URL])
-        print tabulate(res_list, ["NAME", "MANIFEST", "TYPE", "STATUS", "URL"], tablefmt="plain")
+        print(tabulate(res_list, ["NAME", "MANIFEST", "TYPE", "STATUS", "URL"], tablefmt="plain"))
+        # gather Secrets status:
+        print("\n" + 80*"=")
+        print("[Secrets]")
+        sec_list = []
+        secret_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/secrets/kploy-secrets"])
+        sec_URL = "".join([kploy["apiserver"], secret_path])
+        print("URL: %s" %(sec_URL))
+        secret = pyk_client.describe_resource(secret_path)
+        secret_data = secret.json()["data"]
+        for k, v in secret_data.iteritems():
+            sec_list.append([k, base64.b64decode(v)])
+        print(tabulate(sec_list, ["KEY", "VALUE"], tablefmt="plain"))
+        print("\n" + 80*"=")
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
@@ -212,6 +226,7 @@ def cmd_destroy():
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        # delete all services and RCs:
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
         rcs = os.path.join(here, RC_DIR)
@@ -219,6 +234,12 @@ def cmd_destroy():
         rc_manifests_confirmed = kploycommon._visit(rcs, 'RC', cache_remotes=True)
         kploycommon._destroy(pyk_client, kploy["namespace"], here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
         kploycommon._destroy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
+        # delete secrets:
+        secret_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/secrets/kploy-secrets"])
+        pyk_client.delete_resource(resource_path=secret_path)
+        # delete the namespace:
+        ns_path = "".join(["/api/v1/namespaces/", kploy["namespace"]])
+        pyk_client.delete_resource(resource_path=ns_path)
     except (Error) as e:
         print("Something went wrong destroying your app:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
@@ -256,7 +277,7 @@ def cmd_stats():
                 pod["status"]["phase"],
                 "".join([kploy["apiserver"], pod["metadata"]["selfLink"]])
             ])
-        print tabulate(pod_details, ["NAME", "HOST", "STATUS", "URL"], tablefmt="plain")
+        print(tabulate(pod_details, ["NAME", "HOST", "STATUS", "URL"], tablefmt="plain"))
         print("\n" + 80*"=")
         # provide utilization info:
         print("[Nodes used by your app]\n")
@@ -272,7 +293,7 @@ def cmd_stats():
                     node["status"]["capacity"]["pods"] + ", " + node["status"]["capacity"]["cpu"] + ", " + node["status"]["capacity"]["memory"],
                     "".join([kploy["apiserver"], node["metadata"]["selfLink"]])
                 ])
-        print tabulate(node_ips, ["IP", "HOST OS", "CONTAINER RUNTIME", "CAPACITY (PODS, CPU, MEM)", "URL"], tablefmt="plain")
+        print(tabulate(node_ips, ["IP", "HOST OS", "CONTAINER RUNTIME", "CAPACITY (PODS, CPU, MEM)", "URL"], tablefmt="plain"))
         print("\n" + 80*"=")
     except (Error) as e:
         print("Something went wrong:\n%s" %(e))

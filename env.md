@@ -39,6 +39,4 @@ In your app, you can ...
 What happens with `env/*.secret` files is the following: on `kploy run` (and only then) kploy will go through the list of files it finds and generate one [Kubernetes Secret](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) per file it finds. It will deploy the secrets first before any services or RCs are deployed
 
 
-TBD: clean-up of secrets in destroy (and, yeah, also get rid of namespaces)
-
 TBD: integrate http://kubernetes.sh/kploy/
