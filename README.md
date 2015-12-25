@@ -21,14 +21,13 @@ All of the following are included in the setup:
 
 ## Releases
 
-- [x] In v0.7: adds support for environment data: automagic handling of Kubernetes Secrets
-- [x] In v0.6: export command (result is imported when doing `kploy init`)
-- [x] In v0.5: simple support for helm charts via remotes
-- [x] In v0.4: support for namespaces (field in Kployfile)
+- [x] In v0.7: adds support for environment data: automagic handling of Kubernetes Secrets on `run`
+- [x] In v0.6: `export` command creates snapshot of app; can be imported when doing `init`
+- [x] In v0.5: simple support for helm charts via remotes (`*.url`)
+- [x] In v0.4: support for namespaces (via `namespace` field in Kployfile)
 - [x] In v0.3: moved to Kubernauts org, new location is https://github.com/kubernauts/kploy 
-- [x] In v0.2: stats command, showing utilization, containers state summary and destroy command
-- [x] In v0.2: init command (creates Kployfile and placeholder RC and service file) and app management (list of apps, check apps status)
-- [x] In v0.1: dryrun and run commands
+- [x] In v0.2: `init` command and app management: resources via `list` and runtime statistics via `stats`
+- [x] In v0.1: `dryrun` and `run` commands
 
 ## Roadmap
 
