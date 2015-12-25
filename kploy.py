@@ -24,8 +24,10 @@ DEBUG = False    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
 EXPORT_ARCHIVE_FILENAME = "app.kploy"
+SECRETS_FILE_EXT = ".secret"
 RC_DIR = "rcs/"
 SVC_DIR = "services/"
+ENV_DIR = "env/"
 
 if DEBUG:
   FORMAT = "%(asctime)-0s %(levelname)s %(message)s [at line %(lineno)d]"
@@ -93,6 +95,21 @@ def cmd_run():
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         # set up a namespace for this app:
         kploycommon._create_ns(pyk_client, kploy["namespace"], VERBOSE)
+
+        # set up a secrets for this app:
+        env = os.path.join(here, ENV_DIR)
+        secrets = {}
+        logging.debug("Visiting %s" %env)
+        for _, _, file_names in os.walk(env):
+            for afile in file_names:
+                if afile.endswith(SECRETS_FILE_EXT):
+                    logging.debug("Got a secret input: %s" %(afile))
+                    key = os.path.splitext(afile)[0]
+                    raw_data = open(os.path.join(here, afile), "r").read()
+                    val = base64.b64encode(raw_data)
+                    secrets[key] = val
+        kploycommon._create_secrets(pyk_client, kploy["name"], secrets, VERBOSE)
+
         # collect Services and RCs ...
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
