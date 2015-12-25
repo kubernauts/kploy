@@ -132,6 +132,11 @@ Use `kploy list` to check how it's doing.
       <p>Note that when <code>kploy run</code> is executed, the resources are marked with the additional label <code>guard=pyk</code>.
       This label allows us to identify resources (RCs and services) that are managed by kploy. Do not manually remove them.
       </p>
+      <p>
+        If you need to pass confidential data such as passwords or API keys to one of your services, just let kploy handle it
+        automagically via its env mechanism: read more about it in the <a href="https://github.com/kubernauts/kploy/blob/master/env.md#secrets">Secrets</a>
+        section of the env doc.
+      </p>
       </section>
       <section>
         <h2 id="manage">Manage your app</h2>
