@@ -10,7 +10,7 @@ You would use kploy's environment mechanism to provide this data; just make sure
 
 ### Define
 
-In the following we have two chunks of secret data, a database password `dbpassword` and a [Twitter consumer key](https://themepacific.com/how-to-generate-api-key-consumer-token-access-key-for-twitter-oauth/994/) called `tkk`. 
+In the following we have two chunks of secret data, a database password `dbpassword` and a [Twitter consumer key](https://themepacific.com/how-to-generate-api-key-consumer-token-access-key-for-twitter-oauth/994/) called `tck`. 
 We want to provide these two secrets to services. First, we define them like so:
 
     $ echo "abadpassword" > env/dbpassword.secret
@@ -82,7 +82,7 @@ What you will have to provide is the mount point, that is, setting `mountPath` a
 
 ### How does it work?
 
-What happens with `env/*.secret` files is the following: on `kploy run` (and only then) kploy will go through the list of files it finds and generate one [Kubernetes Secret](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) per file it finds. It will deploy the secrets first before any services or RCs are deployed. Each secret input file `xxx.secret` is mapped to a key-value pair that can be consumed from any pod in the app's namespace.
+What happens with `env/*.secret` files is the following: on `kploy run` (and only then) kploy will go through the list of files it finds and generate a (namespace-)global [Kubernetes Secret](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) called `kploy-secrets`. Each secret input file `.secret` kploy finds in the `env` dir is mapped to a key-value pair that can be consumed from any pod in the app's namespace.
 
 So, you'd start out with creating a bunch of `.secret` files in `env/`
 
@@ -111,3 +111,4 @@ This would be mapped to two entries in the (namespace-)global Secret called `kpl
     tck         075d077c888bb0c5a296ad1c65e07267b77c0a9eb264b914621d6b72c770cd84
     dbpassword  abadpassword
 
+Note that kploy will deploy the secret first thing, before any services or RCs are deployed and so that it is guaranteed that the secret data is available to all RCs on start-up.
