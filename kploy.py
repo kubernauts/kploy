@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 import pprint
+import base64
 import kploycommon
 
 from tabulate import tabulate
@@ -105,10 +106,14 @@ def cmd_run():
                 if afile.endswith(SECRETS_FILE_EXT):
                     logging.debug("Got a secret input: %s" %(afile))
                     key = os.path.splitext(afile)[0]
-                    raw_data = open(os.path.join(here, afile), "r").read()
+                    logging.debug("Secret key: %s" %(key))
+                    with open(os.path.join(env, afile), "r") as sec_file:
+                        raw_data = sec_file.read().strip()
+                    logging.debug("Secret data: %s" %(raw_data))
                     val = base64.b64encode(raw_data)
+                    logging.debug("Secret base64 encoded data: %s" %(val))
                     secrets[key] = val
-        kploycommon._create_secrets(pyk_client, kploy["name"], secrets, VERBOSE)
+        kploycommon._create_secrets(pyk_client, kploy["name"], kploy["namespace"], secrets, VERBOSE)
 
         # collect Services and RCs ...
         rc_manifests_confirmed, svc_manifests_confirmed = [], []

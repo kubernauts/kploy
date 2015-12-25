@@ -253,7 +253,7 @@ def _init_from_archive(archive_filename):
             except KeyError:
                 logging.debug("Did not find %s in archive" %(file))
 
-def _create_secrets(pyk_client, app_name, secrets, verbose):
+def _create_secrets(pyk_client, app_name, namespace, secrets, verbose):
     """
     Creates a Secret with a number of entries.
     """
@@ -261,11 +261,13 @@ def _create_secrets(pyk_client, app_name, secrets, verbose):
     secret["kind"] = "Secret"
     secret["apiVersion"] = "v1"
     secret["metadata"] = {}
-    secret["metadata"]["name"] = "".join([app_name, "_secrets"])
+    secret["metadata"]["name"] = "kploy-secrets"
     secret["metadata"]["labels"] = {}
     secret["metadata"]["labels"]["guard"] = "pyk"
     secret["type"] = "Opaque"
+    secret["data"] = {}
     for k, v in secrets.iteritems():
         secret["data"][k] = v
     if verbose: logging.info("Created secret: %s" %(secret))
-    pyk_client.execute_operation(method='POST', ops_path="/api/v1/secrets", payload=util.serialize_tojson(secret))
+    secrets_path = "".join(["/api/v1/namespaces/", namespace, "/secrets"])
+    pyk_client.execute_operation(method='POST', ops_path=secrets_path, payload=util.serialize_tojson(secret))
