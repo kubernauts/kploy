@@ -341,7 +341,30 @@ def cmd_debug(pod_name):
         print("Sorry, I need a Pod name in order to do my work. Do a `kploy stats` first to glean the Pod name you want to debug, e.g. `webserver-42abc`.")
         print("With the Pod name you can then run `kploy debug webserver-42abc` to take the Pod offline and subsequently for example use `kubectl exec` to enter the Pod.")
         sys.exit(1)
-    if VERBOSE: logging.info("Taking Pod %s offline" %(pod_name))
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    print("Trying to take Pod %s offline for debugging ..." %(pod_name))
+    try:
+        kploy, _  = util.load_yaml(filename=kployfile)
+        logging.debug(kploy)
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        pod_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/pods/", pod_name])
+        pod = pyk_client.describe_resource(pod_path)
+        resource = pod.json()
+        resource["metadata"]["labels"] = {}
+        logging.debug("Removed guard label from Pod, now labeled with: %s" %(resource["metadata"]["labels"]))
+        pyk_client.execute_operation(method='PUT', ops_path=pod_path, payload=util.serialize_tojson(resource))
+        # now we just need to make sure that the newly created Pod is again owned by kploy:
+        rc_name = pod_name[0:pod_name.rfind("-")] # NOTE: this is a hack, it assumes a certain generator pattern; need to figure a better way to find a Pod's RC
+        logging.debug("Generating RC name from Pod: %s" %(rc_name))
+        rc_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/replicationcontrollers/", rc_name])
+        rc = pyk_client.describe_resource(rc_path)
+        kploycommon._own_pods_of_rc(pyk_client, rc, kploy["namespace"], rc_path, VERBOSE)
+    except (Exception) as e:
+        print("Something went wrong when taking the Pod offline:\n%s" %(e))
+        sys.exit(1)
+    print(80*"=")
+    print("\nOK, the Pod `%s` is offline. Now you can, for example, use `kubectl exec` now to debug it." %(pod_name))
 
 if __name__ == "__main__":
     try:
@@ -374,7 +397,7 @@ if __name__ == "__main__":
         else:
             cmd = args.command[0]
             param = None
-            if len(args.command) == 2:
+            if len(args.command) == 2: # we have an additional parameter for the command
                 param = args.command[1]
             logging.debug("Executing command %s with param %s" %(cmd, param))
             if cmd in cmds.keys():

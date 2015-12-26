@@ -68,21 +68,6 @@ def _dump(alist):
     for litem in alist:
         logging.info("-> %s" %litem)
 
-def _get_pods_of_rc(pyk_client, rc, namespace):
-    """
-    Retrieves a list of all pods a certain RC manages.
-    """
-    pods_selectors = rc["spec"]["selector"]
-    sel = ""
-    for k, v in pods_selectors.iteritems():
-        sel += "".join([k, "%3D", v , ","])
-    if sel.endswith(","):
-        sel = sel[:-1]
-    pods_of_rc_path = "".join(["/api/v1/namespaces/", namespace, "/pods?labelSelector=", sel])
-    pods = pyk_client.execute_operation(method="GET", ops_path=pods_of_rc_path)
-    pods_list = pods.json()["items"]
-    return pods_list
-
 def _deploy(pyk_client, namespace, here, dir_name, alist, resource_name, verbose):
     """
     Deploys resources based on manifest files. Currently the following resources are supported:
@@ -101,12 +86,7 @@ def _deploy(pyk_client, namespace, here, dir_name, alist, resource_name, verbose
         logging.debug(res.json())
         # now make sure that a RC's pods are also owned:
         if resource_name == "RC":
-            print("Waiting %d sec before looking for pods of RC %s" %(PODS_UP_DELAY_IN_SEC, res_path))
-            sleep(PODS_UP_DELAY_IN_SEC)
-            pods_list = _get_pods_of_rc(pyk_client, res.json(), namespace)
-            for pod in pods_list:
-                if verbose: logging.info("Now trying to own %s" %(pod["metadata"]["selfLink"]))
-                _own_resource(pyk_client, pod["metadata"]["selfLink"], verbose)
+            _own_pods_of_rc(pyk_client, res, namespace, res_path, verbose)
 
 def _destroy(pyk_client, namespace, here, dir_name, alist, resource_name, verbose):
     """
@@ -157,8 +137,34 @@ def _own_resource(pyk_client, resource_path, verbose):
         labels = {}
     labels["guard"] = "pyk"
     resource["metadata"]["labels"] = labels
-    if verbose: logging.info("Owning resource, now labeled with: %s" %(resource["metadata"]["labels"]))
+    logging.debug("Owning resource, now labeled with: %s" %(resource["metadata"]["labels"]))
     pyk_client.execute_operation(method='PUT', ops_path=resource_path, payload=util.serialize_tojson(resource))
+
+def _own_pods_of_rc(pyk_client, rc, namespace, rc_path, verbose):
+    """
+    Owns all pods a certain RC manages by labeling them with `guard=pyk`.
+    """
+    print("Waiting %d sec before looking for pods of RC %s" %(PODS_UP_DELAY_IN_SEC, rc_path))
+    sleep(PODS_UP_DELAY_IN_SEC)
+    pods_list = _get_pods_of_rc(pyk_client, rc.json(), namespace)
+    for pod in pods_list:
+        logging.debug("Now trying to own %s" %(pod["metadata"]["selfLink"]))
+        _own_resource(pyk_client, pod["metadata"]["selfLink"], verbose)
+
+def _get_pods_of_rc(pyk_client, rc, namespace):
+    """
+    Retrieves a list of all pods a certain RC manages.
+    """
+    pods_selectors = rc["spec"]["selector"]
+    sel = ""
+    for k, v in pods_selectors.iteritems():
+        sel += "".join([k, "%3D", v , ","])
+    if sel.endswith(","):
+        sel = sel[:-1]
+    pods_of_rc_path = "".join(["/api/v1/namespaces/", namespace, "/pods?labelSelector=", sel])
+    pods = pyk_client.execute_operation(method="GET", ops_path=pods_of_rc_path)
+    pods_list = pods.json()["items"]
+    return pods_list
 
 def _create_ns(pyk_client, namespace, verbose):
     """
