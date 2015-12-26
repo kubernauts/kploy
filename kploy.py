@@ -330,6 +330,12 @@ def cmd_export():
         print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
 
+def cmd_debug():
+    """
+    Enables you to debug a Pod by taking it offline through removing the `guard=pyk` label.
+    """
+    if VERBOSE: logging.info("Taking Pod %s offline" %(pod_name))
+
 if __name__ == "__main__":
     try:
         cmds = {
@@ -339,7 +345,8 @@ if __name__ == "__main__":
             "init": cmd_init,
             "destroy": cmd_destroy,
             "stats": cmd_stats,
-            "export": cmd_export
+            "export": cmd_export,
+            "debug": cmd_debug
         }
 
         parser = argparse.ArgumentParser(

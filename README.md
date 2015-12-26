@@ -32,6 +32,6 @@ All of the following are included in the setup:
 ## Roadmap
 
 - [ ] Add debug command, implementing https://gist.github.com/mhausenblas/b74742ad10f756e680c5
-- [ ] Add scale command
+- [ ] Add scale command (HPA via Kployfile)
 
 See also the [issue](https://github.com/kubernauts/kploy/issues) list for further planned features.
