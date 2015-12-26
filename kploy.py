@@ -39,7 +39,7 @@ else:
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-def cmd_dryrun():
+def cmd_dryrun(param):
     """
     Looks for a `Kployfile` file in the current directory and tries
     to validate its content, incl. syntax validation and mock execution.
@@ -83,7 +83,7 @@ def cmd_dryrun():
     print(80*"=")
     print("\nOK, we're looking good! You're ready to deploy your app with `kploy run` now :)\n")
 
-def cmd_run():
+def cmd_run(param):
     """
     Looks for a `Kployfile` file in the current directory and tries to run it.
     """
@@ -122,14 +122,14 @@ def cmd_run():
         # ... and deploy them:
         kploycommon._deploy(pyk_client, kploy["namespace"], here, SVC_DIR, svc_manifests_confirmed, 'service', VERBOSE)
         kploycommon._deploy(pyk_client, kploy["namespace"], here, RC_DIR, rc_manifests_confirmed, 'RC', VERBOSE)
-    except (Error) as e:
+    except (Exception) as e:
         print("Something went wrong deploying your app:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
     print("\nOK, I've deployed `%s/%s`.\nUse `kploy list` and `kploy stats` to check how it's doing." %(kploy["namespace"], kploy["name"]))
 
-def cmd_list():
+def cmd_list(param):
     """
     Lists app resources and their status.
     """
@@ -170,19 +170,22 @@ def cmd_list():
         sec_list = []
         secret_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/secrets/kploy-secrets"])
         sec_URL = "".join([kploy["apiserver"], secret_path])
-        print("URL: %s" %(sec_URL))
         secret = pyk_client.describe_resource(secret_path)
-        secret_data = secret.json()["data"]
-        for k, v in secret_data.iteritems():
-            sec_list.append([k, base64.b64decode(v)])
-        print(tabulate(sec_list, ["KEY", "VALUE"], tablefmt="plain"))
+        if secret.status_code == 200:
+            print("URL: %s" %(sec_URL))
+            secret_data = secret.json()["data"]
+            for k, v in secret_data.iteritems():
+                sec_list.append([k, base64.b64decode(v)])
+            print(tabulate(sec_list, ["KEY", "VALUE"], tablefmt="plain"))
+        else:
+            print("No env data deployed.")
         print("\n" + 80*"=")
-    except (Error) as e:
+    except (Exception) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
 
-def cmd_init():
+def cmd_init(param):
     """
     Creates a dummy `Kployfile` file in the current directory sets up the directories.
     """    
@@ -215,7 +218,7 @@ def cmd_init():
         print(80*"=")
         print("\nOK, I've set up the %s deployment file and created necessary directories.\nNow edit the deployment file and copy manifests into the respective directories.\n" %(DEPLOYMENT_DESCRIPTOR))
 
-def cmd_destroy():
+def cmd_destroy(param):
     """
     Destroys the app, removing all resources.
     """
@@ -240,14 +243,14 @@ def cmd_destroy():
         # delete the namespace:
         ns_path = "".join(["/api/v1/namespaces/", kploy["namespace"]])
         pyk_client.delete_resource(resource_path=ns_path)
-    except (Error) as e:
+    except (Exception) as e:
         print("Something went wrong destroying your app:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
     print(80*"=")
     print("\nOK, I've destroyed `%s/%s`\n" %(kploy["namespace"], kploy["name"]))
 
-def cmd_stats():
+def cmd_stats(param):
     """
     Shows cluster utilization and provides summary of the pods' state, from the point of view of your app.
     """
@@ -295,12 +298,12 @@ def cmd_stats():
                 ])
         print(tabulate(node_ips, ["IP", "HOST OS", "CONTAINER RUNTIME", "CAPACITY (PODS, CPU, MEM)", "URL"], tablefmt="plain"))
         print("\n" + 80*"=")
-    except (Error) as e:
+    except (Exception) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
 
-def cmd_export():
+def cmd_export(param):
     """
     Creates an archive of all relevant app files, incl. Kployfile and manifest directories.
     You can use the resulting archive then with `kploy init` to bootstrap you app in a different location.
@@ -325,15 +328,19 @@ def cmd_export():
             rc_file_name = os.path.join(RC_DIR, rc)
             kploycommon._export_add(archive_file, rc_file_name)
         kploycommon._export_done(archive_file)
-    except (Error) as e:
+    except (Exception) as e:
         print("Something went wrong:\n%s" %(e))
         print("Consider validating your deployment with `kploy dryrun` first!")
         sys.exit(1)
 
-def cmd_debug():
+def cmd_debug(pod_name):
     """
     Enables you to debug a Pod by taking it offline through removing the `guard=pyk` label.
     """
+    if not pod_name:
+        print("Sorry, I need a Pod name in order to do my work. Do a `kploy stats` first to glean the Pod name you want to debug, e.g. `webserver-42abc`.")
+        print("With the Pod name you can then run `kploy debug webserver-42abc` to take the Pod offline and subsequently for example use `kubectl exec` to enter the Pod.")
+        sys.exit(1)
     if VERBOSE: logging.info("Taking Pod %s offline" %(pod_name))
 
 if __name__ == "__main__":
@@ -360,13 +367,18 @@ if __name__ == "__main__":
             sys.exit(0)
         if args.verbose:
             VERBOSE = True
-        logging.debug("Got command `%s`" %(args))
+        logging.debug("Got command %s" %(args))
         if args.command[0] == "explain":
             cmd = args.command[1]
             print(cmd + ":" + cmds[cmd].__doc__)
         else:
             cmd = args.command[0]
+            param = None
+            if len(args.command) == 2:
+                param = args.command[1]
+            logging.debug("Executing command %s with param %s" %(cmd, param))
             if cmd in cmds.keys():
-                cmds[cmd]()
-    except:
+                cmds[cmd](param)
+    except (Exception) as e:
+        print("Something went wrong:\n%s" %(e))
         sys.exit(1)
