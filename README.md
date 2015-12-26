@@ -21,6 +21,7 @@ All of the following are included in the setup:
 
 ## Releases
 
+- [x] In v0.8: adds `debug` command, some refactoring
 - [x] In v0.7: adds support for environment data: automagic handling of Kubernetes Secrets on `run`
 - [x] In v0.6: `export` command creates snapshot of app; can be imported when doing `init`
 - [x] In v0.5: simple support for helm charts via remotes (`*.url`)
@@ -31,7 +32,6 @@ All of the following are included in the setup:
 
 ## Roadmap
 
-- [ ] Add debug command, implementing https://gist.github.com/mhausenblas/b74742ad10f756e680c5
 - [ ] Add scale command (HPA via Kployfile)
 
 See also the [issue](https://github.com/kubernauts/kploy/issues) list for further planned features.
