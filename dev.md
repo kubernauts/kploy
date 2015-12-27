@@ -2,6 +2,44 @@
 
 What follows is a description of advanced uses of kploy in the development and operations phases.
 
+## Scale
+
+Oftentimes you will want to adapt the compute power of your app, depending on the load or other considerations. 
+In order to achieve this, you can change the number of pods running in an RC via the `scale` command. First, you'll
+have to figure the available RCs of your app using the `list` command like so:
+
+    $ ./kploy list
+    Resources of app `myns/simple_app`:
+    
+    [Services and RCs]
+    
+    NAME           MANIFEST                       TYPE     STATUS    URL
+    webserver-svc  services/webserver-svc.yaml    service  online    http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/services/webserver-svc
+    use-secret-rc  rcs/alpine-use-secret-rc.yaml  RC       online    http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/replicationcontrollers/use-secret-rc
+    webserver-rc   rcs/nginx-webserver-rc.yaml    RC       online    http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/replicationcontrollers/webserver-rc
+    
+    ================================================================================
+    [Secrets]
+    URL: http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/secrets/kploy-secrets
+    KEY         VALUE
+    tck         075d077c888bb0c5a296ad1c65e07267b77c0a9eb264b914621d6b72c770cd84
+    dbpassword  abadpassword
+    
+    ================================================================================
+
+OK, let us now assume that we want to scale up the RC `webserver-rc`:
+
+    $ ./kploy scale webserver-rc=5
+
+With the above command, `webserver-rc` will be scaled to 5 replicas, that is:
+
+    ...
+    spec:
+      replicas: 5
+    ...
+
+Note that once the [Horizontal Pod Autoscaler](https://github.com/mhausenblas/k8s-autoscale) is out of beta, the plan is to support it with `auto` as a scale value. So, in above example, `webserver-rc=auto` would trigger the creation of an autoscaler for the RC `webserver-rc`.
+
 ## Debugging
 
 With kploy you can live-debug any Pod of your application by using the `debug` command.
