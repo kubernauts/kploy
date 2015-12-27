@@ -31,6 +31,7 @@
           <li><a href="#init">Create</a> app from scratch or from archive: <code>kploy init</code></li>
           <li><a href="#run">Launch</a> app: <code>kploy dryrun</code> and <code>kploy run</code></li>
           <li><a href="#manage">Monitor</a> app behaviour: <code>kploy list</code> and <code>kploy stats</code></li>
+          <li><a href="#scale">Scale</a> app: <code>kploy scale</code></li>
           <li><a href="#destroy">Destroy</a> app and release resources: <code>kploy destroy</code></li>
           <li><a href="#export">Export</a> app: <code>kploy export</code></li>
         </ul>
@@ -170,8 +171,14 @@ IP               HOST OS                CONTAINER RUNTIME    CAPACITY (PODS, CPU
 
 ================================================================================
 </code></pre>
+      <h3 id="scale">Scale</h3>
+      <p>To scale one of the RCs of your app, use the <code>scale</code> command as described in
+      the <a href="https://github.com/kubernauts/kploy/blob/master/dev.md#scale">Scale</a> section of the dev & ops doc.
+      </p>
+      <h3 id="debug">Debugging</h3>
       <p>Should you need to do some troubleshooting on the Pod-level, use the <code>debug</code> command as described in
-      the <a href="https://github.com/kubernauts/kploy/blob/master/dev.md#debugging">Debugging</a> section of the dev & ops doc.</p>
+      the <a href="https://github.com/kubernauts/kploy/blob/master/dev.md#debugging">Debugging</a> section of the dev & ops doc.
+      </p>
       </section>
       <section>
         <h2 id="destroy">Tear down your app</h2>
