@@ -8,7 +8,7 @@ except (IOError, ImportError):
 
 setup(
     name="kploy",
-    version="0.8.0",
+    version="0.9.0",
     description="An opinionated Kubernetes deployment system for appops",
     long_description=long_description,
     author="Michael Hausenblas",

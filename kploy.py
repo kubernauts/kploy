@@ -5,7 +5,7 @@ The kploy main UX.
 
 @author: Michael Hausenblas, http://mhausenblas.info/#i
 @since: 2015-11-29
-@status: init
+@status: beta
 """
 
 import argparse
@@ -336,6 +336,7 @@ def cmd_export(param):
 def cmd_debug(pod_name):
     """
     Enables you to debug a Pod by taking it offline through removing the `guard=pyk` label.
+    Usage: `debug pod`, for example, `debug webserver-42abc`.
     """
     if not pod_name:
         print("Sorry, I need a Pod name in order to do my work. Do a `kploy stats` first to glean the Pod name you want to debug, e.g. `webserver-42abc`.")
@@ -364,7 +365,49 @@ def cmd_debug(pod_name):
         print("Something went wrong when taking the Pod offline:\n%s" %(e))
         sys.exit(1)
     print(80*"=")
-    print("\nOK, the Pod `%s` is offline. Now you can, for example, use `kubectl exec` now to debug it." %(pod_name))
+    print("\nOK, the Pod %s is offline. Now you can, for example, use `kubectl exec` now to debug it." %(pod_name))
+
+def cmd_scale(scale_def):
+    """
+    Enables you to scale an RC up or down by setting the number of replicas.
+    Usage: `scale rc=replica_count`, for example, `scale webserver-rc=10`.
+    """
+    if not scale_def:
+        print("Sorry, I need a scale definition in order to do my work. Do a `kploy list` first to glean the RC name you want to scale, e.g. `webserver-rc`.")
+        print("With the RC name you can then run `kploy scale webserver-rc=5` to scale the respective RC to 5 replicas.")
+        sys.exit(1)
+    here = os.path.dirname(os.path.realpath(__file__))
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    try:
+        rc_name = scale_def.split("=")[0]
+        replica_count = int(scale_def.split("=")[1])
+    except (Exception) as e:
+        print("Can't parse scale definition `%s` due to: %s" %(scale_def, e))
+        print("The scale definition should look as follows: `rc=replica_count`, for example, `scale webserver-rc=10`.")
+        sys.exit(1)
+    print("Trying to scale RC %s to %d replicas" %(rc_name, replica_count))
+    try:
+        kploy, _  = util.load_yaml(filename=kployfile)
+        logging.debug(kploy)
+        pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
+        rc_path = "".join(["/api/v1/namespaces/", kploy["namespace"], "/replicationcontrollers/", rc_name])
+        rc = pyk_client.describe_resource(rc_path)
+        resource = rc.json()
+        old_replica_count = resource["spec"]["replicas"]
+        if VERBOSE: logging.info("Scaling RC from %d to %d replicas" %(old_replica_count, replica_count))
+        logging.debug("RC about to be scaled: %s" %(resource))
+        resource["spec"]["replicas"] = replica_count
+        pyk_client.execute_operation(method='PUT', ops_path=rc_path, payload=util.serialize_tojson(resource))
+        # and make sure that the newly created Pods are owned by kploy (on scale up)
+        if replica_count > old_replica_count:
+            logging.debug("Scaling up, trying to own new Pods")
+            rc = pyk_client.describe_resource(rc_path)
+            kploycommon._own_pods_of_rc(pyk_client, rc, kploy["namespace"], rc_path, VERBOSE)
+    except (Exception) as e:
+        print("Something went wrong when scaling RC:\n%s" %(e))
+        sys.exit(1)
+    print(80*"=")
+    print("OK, I've scaled RC %s to %d replicas. You can do a `kploy stats` now to verify it." %(rc_name, replica_count))
 
 if __name__ == "__main__":
     try:
@@ -376,9 +419,10 @@ if __name__ == "__main__":
             "destroy": cmd_destroy,
             "stats": cmd_stats,
             "export": cmd_export,
-            "debug": cmd_debug
+            "debug": cmd_debug,
+            "scale": cmd_scale
         }
-
+        
         parser = argparse.ArgumentParser(
             description="kploy is an opinionated Kubernetes deployment system for appops",
             epilog="Examples: `kploy init`, `kploy run`, `kploy list`, or to learn its usage: `kploy explain run`, `kploy explain list`, etc.")

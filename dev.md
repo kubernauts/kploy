@@ -27,16 +27,30 @@ have to figure the available RCs of your app using the `list` command like so:
     
     ================================================================================
 
-OK, let us now assume that we want to scale up the RC `webserver-rc`:
+OK, let us now assume that we want to scale up the RC `webserver-rc` to 5 replicas:
 
     $ ./kploy scale webserver-rc=5
+    Trying to scale RC webserver-rc to 5 replicas
+    ================================================================================
+    OK, I've scaled RC webserver-rc to 5 replicas. You can do a `kploy stats` now to verify it.
 
-With the above command, `webserver-rc` will be scaled to 5 replicas, that is:
+Let's see the result by doing `stats` before and after the scale command (only the diff of the Pods shown):
 
-    ...
-    spec:
-      replicas: 5
-    ...
+    NAME                 HOST       STATUS    URL
+    use-secret-rc-ilsxn  10.0.3.74  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/use-secret-rc-ilsxn
+    webserver-rc-0ys45   10.0.3.77  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-0ys45
+    webserver-rc-avuq1   10.0.3.75  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-avuq1
+    webserver-rc-fhymf   10.0.3.76  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-fhymf
+    
+    -- scale=webserver-rc=5 -->
+    
+    NAME                 HOST       STATUS    URL
+    use-secret-rc-ilsxn  10.0.3.74  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/use-secret-rc-ilsxn
+    webserver-rc-0ys45   10.0.3.77  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-0ys45
+    webserver-rc-5hv10   10.0.3.77  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-5hv10
+    webserver-rc-6ctq7   10.0.3.75  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-6ctq7
+    webserver-rc-avuq1   10.0.3.75  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-avuq1
+    webserver-rc-fhymf   10.0.3.76  Running   http://52.35.162.3/service/kubernetes/api/v1/namespaces/myns/pods/webserver-rc-fhymf
 
 Note that once the [Horizontal Pod Autoscaler](https://github.com/mhausenblas/k8s-autoscale) is out of beta, the plan is to support it with `auto` as a scale value. So, in above example, `webserver-rc=auto` would trigger the creation of an autoscaler for the RC `webserver-rc`.
 

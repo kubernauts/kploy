@@ -3,7 +3,7 @@ The kploy commons (utility) functions.
 
 @author: Michael Hausenblas, http://mhausenblas.info/#i
 @since: 2015-12-12
-@status: init
+@status: beta
 """
 
 import os
@@ -144,7 +144,7 @@ def _own_pods_of_rc(pyk_client, rc, namespace, rc_path, verbose):
     """
     Owns all pods a certain RC manages by labeling them with `guard=pyk`.
     """
-    print("Waiting %d sec before looking for pods of RC %s" %(PODS_UP_DELAY_IN_SEC, rc_path))
+    if verbose: logging.info("Waiting %d sec before looking for pods of RC %s" %(PODS_UP_DELAY_IN_SEC, rc_path))
     sleep(PODS_UP_DELAY_IN_SEC)
     pods_list = _get_pods_of_rc(pyk_client, rc.json(), namespace)
     for pod in pods_list:
