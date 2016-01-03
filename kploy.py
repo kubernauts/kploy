@@ -44,7 +44,7 @@ def cmd_dryrun(param):
     Looks for a `Kployfile` file in the current directory and tries
     to validate its content, incl. syntax validation and mock execution.
     """
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Trying to execute a dry run on %s " %(kployfile))
     try:
@@ -87,7 +87,7 @@ def cmd_run(param):
     """
     Looks for a `Kployfile` file in the current directory and tries to run it.
     """
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Trying to run %s " %(kployfile))
     try:
@@ -133,7 +133,7 @@ def cmd_list(param):
     """
     Lists app resources and their status.
     """
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Listing resource status of app based on %s " %(kployfile))
     try:
@@ -189,7 +189,7 @@ def cmd_init(param):
     """
     Creates a dummy `Kployfile` file in the current directory sets up the directories.
     """    
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     archivefile = os.path.join(here, EXPORT_ARCHIVE_FILENAME)
     if os.path.exists(kployfile):
@@ -222,7 +222,7 @@ def cmd_destroy(param):
     """
     Destroys the app, removing all resources.
     """
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Trying to destroy app based on %s " %(kployfile))
     try:
@@ -254,7 +254,7 @@ def cmd_stats(param):
     """
     Shows cluster utilization and provides summary of the pods' state, from the point of view of your app.
     """
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Providing stats for your app based on %s " %(kployfile))
     try:
@@ -308,7 +308,7 @@ def cmd_export(param):
     Creates an archive of all relevant app files, incl. Kployfile and manifest directories.
     You can use the resulting archive then with `kploy init` to bootstrap you app in a different location.
     """
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if VERBOSE: logging.info("Exporting app based on content from %s " %(here))
     try:
@@ -342,7 +342,7 @@ def cmd_debug(pod_name):
         print("Sorry, I need a Pod name in order to do my work. Do a `kploy stats` first to glean the Pod name you want to debug, e.g. `webserver-42abc`.")
         print("With the Pod name you can then run `kploy debug webserver-42abc` to take the Pod offline and subsequently for example use `kubectl exec` to enter the Pod.")
         sys.exit(1)
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     print("Trying to take Pod %s offline for debugging ..." %(pod_name))
     try:
@@ -376,7 +376,7 @@ def cmd_scale(scale_def):
         print("Sorry, I need a scale definition in order to do my work. Do a `kploy list` first to glean the RC name you want to scale, e.g. `webserver-rc`.")
         print("With the RC name you can then run `kploy scale webserver-rc=5` to scale the respective RC to 5 replicas.")
         sys.exit(1)
-    here = os.path.dirname(os.path.realpath(__file__))
+    here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     try:
         rc_name = scale_def.split("=")[0]
