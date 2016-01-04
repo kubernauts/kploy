@@ -6,7 +6,7 @@
     <title>kploy by mhausenblas</title>
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/github-light.css">
-    <link rel="icon" href="images/kploy-logo-small.png" type="image/x-icon">
+    <link rel="icon" href="images/k8s-logo.png" type="image/x-icon">
     <meta name="viewport" content="width=device-width">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -16,9 +16,10 @@
     <div class="wrapper">
       <header>
         <div style="text-align: center; margin-bottom: 50px">
-        <a href="http://kubernetes.sh"><img src="images/kploy-logo-small.png" width="150px" alt="kploy"></a>
+        <a href=""><img src="images/kploy-logo-small.png" width="150px" alt="kploy"></a>
         <p>kploy, the opinionated Kubernetes deployment system for appops</p>
         </div>
+        <div style="text-align: center; margin-bottom: 20px; font-size: 120%">v0.10</div>
         <ul>
           <li><a href="#init">init</a></li>
           <li><a href="#dryrun">dryrun</a></li>
@@ -39,7 +40,7 @@
       <section>
         <h2>Why bother?</h2>
         <p>Are you an <a href="https://medium.com/@mhausenblas/what-is-appops-why-do-i-care-what-i-do-about-it-b83a28b0eabc">appops</a>? 
-        Do you want to run microservices-style Kubernetes applications in a simple and convinient way? Is the <code>kubectl</code> interface too low-level and feels sorta cumbersome to use?
+        Do you want to run microservices-style Kubernetes applications in a simple and convenient way? Is the <code>kubectl</code> interface too low-level and feels sorta cumbersome to use?
         <em>If you found yourself answering one of the above questions with a Yes, then read on.</em></p>
         <p>The basic idea of kploy is to deploy and manage an app based on a collection of manifest files, such as Kubernetes service or replication controller manifests.
         With kploy you simply set up your app deployment descriptor and use convention over configuration in order to manage your app across the entire lifecycle.</p>
@@ -50,6 +51,7 @@
           <li><a href="#scale">Scale</a> app: <code>kploy scale</code></li>
           <li><a href="#destroy">Destroy</a> app and release resources: <code>kploy destroy</code></li>
           <li><a href="#export">Export</a> app: <code>kploy export</code></li>
+          <li><a href="#experimental">Experimental</a> features: <code>kploy pull</code> and <code>kploy push</code></li>
         </ul>
         <p>For a quick overview, check out the <a href="https://github.com/kubernauts/kploy/blob/master/examples.md">walkthrough example</a> and have a look at the following screen cast:</p> 
         <div>
@@ -59,8 +61,11 @@
       <section>
         <h2>Install</h2>
         <p>You'll need Python 2.6 or above and then you can install kploy simply like so:</p>
-<pre><code>pip install kploy</code></pre>
-        <p>Note that kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
+<pre><code>git clone https://github.com/kubernauts/kploy.git && cd kploy</code></pre>
+        <p>kploy assumes that you have access to a Kubernetes cluster. It does not help you in setting one up.</p>
+        <p>Note that if you're experiencing authentication issues you can use <code>kubectl proxy --port=8080 &</code>
+        along with <code>apiserver: http://localhost:8080</code> in the Kployfile.
+        </p>
       </section>
       <section>
         <h2 id="init">Prepare your deployment</h2>
@@ -216,6 +221,51 @@ OK, I've destroyed `myns/simple_app`
 Adding content of app `myns/simple_app` to app.kploy
 </code></pre>
       </section>
+      <section>
+        <h2 id="experimental">Experimental</h2>
+        <p>You can store a snapshot of your app using the <code>push</code> command and restore it using <code>pull</code>. 
+           What happens under the cover is that kploy exports your app (just as with the <code>export</code> command)
+           and then stores the archive in the <a href="https://github.com/kubernauts/kploy.net">kploy application registry</a>.
+        </p>
+<pre><code>$ ./kploy push
+Adding content of app `default/kploy2` to /Users/mhausenblas/Documents/repos/kubernauts/kploy/.app.kploy
+Using https://github.com/kubernauts/kploy as the app's workspace
+================================================================================
+
+OK, I've successfully pushed the app archive to the registry:
+http://registry.kploy.net/api/v1/app/bca0965d2335ab87d806a2982b132adb80d35a42d815a5bb4d9fe27aa81a3a66?workspace=https://github.com/kubernauts/kploy
+
+To list the available app(s), use the `kploy pull` command.
+</code></pre>
+      <p>To restore the app, use <code>pull</code>. First you'd usually list available versions:</p>
+<pre><code>$ ./kploy pull
+Using https://github.com/kubernauts/kploy as the app's workspace
+TIMESTAMP                 ID                                                                  SIZE
+2016-01-04T12:43:13.545Z  7983b3dd7b38f2fb82d195eed7f78dcc1ac37de84a31f4bdf305bdb9d7e019f2    1017
+2016-01-04T12:43:07.917Z  bca0965d2335ab87d806a2982b132adb80d35a42d815a5bb4d9fe27aa81a3a66    1017
+2016-01-04T12:42:52.455Z  e832dbb5f60ad653033edf7b5fa5a573d43322a79c74841019344892b49c8303    1017
+2016-01-04T12:41:12.557Z  adea1abd8d0b03a024e927c978b54010c5315d1e5c4f694b51561b10c5a6c2a2    1016
+================================================================================
+
+OK, I've successfully pulled from the registry.
+
+You can now `kploy pull $ID` to download and init an app.
+
+WARNING: a `kploy pull $ID` will overwrite whatever you had locally.
+</code></pre>
+        <p>You'd then use <code>pull</code> again to pull a certain versions (note: most recent is at the top of the list):</p>
+<pre><code>$ ./kploy pull adea1abd8d0b03a024e927c978b54010c5315d1e5c4f694b51561b10c5a6c2a2
+Using https://github.com/kubernauts/kploy as the app's workspace
+================================================================================
+
+OK, I've set up the app from archive.
+You can now validate it with `kploy dryrun`
+</code></pre>
+        <p>
+        Note that in order for <code>push</code>/<code>pull</code> to work you MUST have the <code>source</code>
+        field in the Kployfile set to either a GitHub username URL or project URL. For example, <code>https://github.com/mhausenblas</code>
+        and <code>https://github.com/kubernauts/kploy</code> are valid.
+        </section>
       <footer>
         <p><small>The kploy project is maintained by <a href="https://github.com/mhausenblas">mhausenblas</a></small></p>
         <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
