@@ -21,6 +21,7 @@ All of the following are included in the setup:
 
 ## Releases
 
+- [x] In v0.10: adds experimental `push` and `pull` command via [KAR](https://github.com/kubernauts/kploy.net)
 - [x] In v0.9: adds `scale` command (autoscale yet TBD)
 - [x] In v0.8: adds `debug` command, some refactoring
 - [x] In v0.7: adds support for environment data: automagic handling of Kubernetes Secrets on `run`
@@ -33,8 +34,6 @@ All of the following are included in the setup:
 
 ## Roadmap
 
-With v0.9 kploy is now considered beta. This means the goal is now to stabilize the API,
-gather usage experience and community feedback. See the [issue](https://github.com/kubernauts/kploy/issues) 
-list for further planned features (mainly for 2.x).
-
-To do: add push/pull command in kploy, using [KAR](https://github.com/kubernauts/kploy.net) and the `source` field in Kployfile as workspace.
+kploy is now considered beta. This means the goal is now to stabilize the API, gather usage experience
+and community feedback. See the [issue](https://github.com/kubernauts/kploy/issues) list for further 
+planned features.
