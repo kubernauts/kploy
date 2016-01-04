@@ -29,6 +29,11 @@ SECRETS_FILE_EXT = ".secret"
 RC_DIR = "rcs/"
 SVC_DIR = "services/"
 ENV_DIR = "env/"
+KAR_BASE_URL = "http://registry.kploy.net/api/v1"
+VALID_WORKSPACE_PREFIXES = (
+    "http://github.com/",
+    "https://github.com/"
+)
 
 if DEBUG:
   FORMAT = "%(asctime)-0s %(levelname)s %(message)s [at line %(lineno)d]"
@@ -36,8 +41,13 @@ if DEBUG:
 else:
   FORMAT = "%(asctime)-0s %(message)s"
   logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt="%Y-%m-%dT%I:%M:%S")
+  logging.getLogger("requests").setLevel(logging.WARNING)
 
-logging.getLogger("requests").setLevel(logging.WARNING)
+class InvalidWorkspaceError(Exception):
+    """
+    Error when executing the `push` command: The `source` field in the `Kployfile` file is neither a GitHub username or repo URL.
+    """
+    pass
 
 def cmd_dryrun(param):
     """
@@ -313,7 +323,9 @@ def cmd_export(param):
     if VERBOSE: logging.info("Exporting app based on content from %s " %(here))
     try:
         kploy, _  = util.load_yaml(filename=kployfile)
-        archive_filename, archive_file = kploycommon._export_init(here, DEPLOYMENT_DESCRIPTOR, EXPORT_ARCHIVE_FILENAME)
+        if not param:
+            param = EXPORT_ARCHIVE_FILENAME
+        archive_filename, archive_file = kploycommon._export_init(here, DEPLOYMENT_DESCRIPTOR, param)
         print("Adding content of app `%s/%s` to %s" %(kploy["namespace"], kploy["name"], archive_filename))
         rc_manifests_confirmed, svc_manifests_confirmed = [], []
         services = os.path.join(here, SVC_DIR)
@@ -409,6 +421,45 @@ def cmd_scale(scale_def):
     print(80*"=")
     print("OK, I've scaled RC %s to %d replicas. You can do a `kploy stats` now to verify it." %(rc_name, replica_count))
 
+def cmd_push(param):
+    """
+    Exports the app and uploads it to KAR, the kploy app registry (https://github.com/kubernauts/kploy.net).
+    Note that you MUST set the `source` field in the `Kployfile` file to a GitHub username or repo URL,
+    otherwise the push operation will fail. For example, you can use `source : https://github.com/mhausenblas`
+    if you don't have a project repo for the app (yet) or `source : https://github.com/mhausenblas/abc`
+    if you want to explicitly set the app's project repo.
+    """    
+    here = os.path.realpath(".")
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    archivefile = os.path.join(here, "".join([".", EXPORT_ARCHIVE_FILENAME]))
+    app_link = KAR_BASE_URL
+    if VERBOSE: logging.info("Creating temporary app archive %s" %(archivefile))
+    cmd_export(archivefile)
+    if VERBOSE: logging.info("Trying to upload %s" %(archivefile))
+    try:
+        kploy, _ = util.load_yaml(filename=kployfile)
+        logging.debug(kploy)
+        if kploy["source"].startswith(VALID_WORKSPACE_PREFIXES):
+            print("Using %s as the app's workspace" %(kploy["source"]))
+            res = kploycommon._push_app_archive(kploy["source"], archivefile, KAR_BASE_URL, VERBOSE)
+            app_link = "".join([res.json()["selfLink"], "?workspace=", kploy["source"]])
+        else:
+            raise InvalidWorkspaceError 
+    except (InvalidWorkspaceError) as iwe:
+        print(iwe.__doc__)
+        print("To learn how to fix this, run `kploy explain push`")
+        sys.exit(1)
+    except (Exception) as e:
+        print("Something went wrong pushing your app to the registry:\n%s" %(e))
+        sys.exit(1)
+    finally:
+        if os.path.exists(archivefile):
+           os.remove(archivefile) 
+    print(80*"=")
+    print("\nOK, I've successfully pushed the app archive to the registry:")
+    print("%s" %(app_link))
+    print("\nTo list the available app(s), use the `kploy pull` command.\n")
+
 if __name__ == "__main__":
     try:
         cmds = {
@@ -420,7 +471,8 @@ if __name__ == "__main__":
             "stats": cmd_stats,
             "export": cmd_export,
             "debug": cmd_debug,
-            "scale": cmd_scale
+            "scale": cmd_scale,
+            "push" : cmd_push
         }
         
         parser = argparse.ArgumentParser(

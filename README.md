@@ -36,3 +36,5 @@ All of the following are included in the setup:
 With v0.9 kploy is now considered beta. This means the goal is now to stabilize the API,
 gather usage experience and community feedback. See the [issue](https://github.com/kubernauts/kploy/issues) 
 list for further planned features (mainly for 2.x).
+
+To do: add push/pull command in kploy, using [KAR](https://github.com/kubernauts/kploy.net) and the `source` field in Kployfile as workspace.

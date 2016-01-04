@@ -277,3 +277,15 @@ def _create_secrets(pyk_client, app_name, namespace, secrets, verbose):
     if verbose: logging.info("Created secret: %s" %(secret))
     secrets_path = "".join(["/api/v1/namespaces/", namespace, "/secrets"])
     pyk_client.execute_operation(method='POST', ops_path=secrets_path, payload=util.serialize_tojson(secret))
+
+def _push_app_archive(workspace, local_app_archive, registry_endpoint, verbose):
+    """
+    Uploads the local app archive into a workspace at a remote registry.
+    """
+    operation_path_URL = "".join([registry_endpoint, "/app", "?workspace=", workspace])
+    logging.debug("OPERATION URL:\n%s" %(operation_path_URL))
+    with open(local_app_archive, "rb") as laa:
+        archive_content = laa.read()
+        res = requests.request("POST", operation_path_URL, data=archive_content)
+        logging.debug("RESPONSE:\n%s" %(res.json()))
+    return res
