@@ -20,7 +20,6 @@ from tabulate import tabulate
 from pyk import toolkit
 from pyk import util
 
-
 DEBUG = False    # you can change that to enable debug messages ...
 VERBOSE = False  # ... but leave this one in peace
 DEPLOYMENT_DESCRIPTOR = "Kployfile"
@@ -46,6 +45,12 @@ else:
 class InvalidWorkspaceError(Exception):
     """
     Error when executing the `push` command: The `source` field in the `Kployfile` file is neither a GitHub username or repo URL.
+    """
+    pass
+
+class NoSuchAppError(Exception):
+    """
+    Error when executing the `pull` command: The supplied app ID is invalid, that is, the app does not exist (at least not in this workspace).
     """
     pass
 
@@ -201,10 +206,12 @@ def cmd_init(param):
     """    
     here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
-    archivefile = os.path.join(here, EXPORT_ARCHIVE_FILENAME)
-    if os.path.exists(kployfile):
-        print("Hey! %s already exists.\nI'm not going to destroy existing work. #kthxbye" %(kployfile))
-        sys.exit(1)
+    if not param:
+        param = EXPORT_ARCHIVE_FILENAME
+        if os.path.exists(kployfile):
+            print("Hey! %s already exists.\nI'm not going to destroy existing work. #kthxbye" %(kployfile))
+            sys.exit(1)
+    archivefile = os.path.join(here, param)
     if not os.path.exists(SVC_DIR):
         os.makedirs(SVC_DIR)
     if not os.path.exists(RC_DIR):
@@ -213,7 +220,7 @@ def cmd_init(param):
         if VERBOSE: logging.info("Detected archive %s" %(archivefile))
         kploycommon._init_from_archive(archivefile)
         print(80*"=")
-        print("\nOK, I've set up the deployment from archive.\nYou can now validate it with `kploy dryrun`\n")
+        print("\nOK, I've set up the app from archive.\nYou can now validate it with `kploy dryrun`\n")
     else: # create from scratch
         if VERBOSE: logging.info("Setting up app %s " %(kployfile))
         ikploy = {}
@@ -226,7 +233,8 @@ def cmd_init(param):
         if VERBOSE: logging.info("%s" %(ikploy))
         util.serialize_yaml_tofile(kployfile, ikploy)
         print(80*"=")
-        print("\nOK, I've set up the %s deployment file and created necessary directories.\nNow edit the deployment file and copy manifests into the respective directories.\n" %(DEPLOYMENT_DESCRIPTOR))
+        print("\nOK, I've set up the `%s`, the app deployment descriptor from scratch and created necessary directories." %(DEPLOYMENT_DESCRIPTOR))
+        print("Now edit the app deployment descriptor and copy manifests into the respective directories.\n")
 
 def cmd_destroy(param):
     """
@@ -460,6 +468,72 @@ def cmd_push(param):
     print("%s" %(app_link))
     print("\nTo list the available app(s), use the `kploy pull` command.\n")
 
+
+def cmd_pull(param):
+    """
+    Lists apps or downloads + imports app from KAR, the kploy app registry (https://github.com/kubernauts/kploy.net).
+    Note that you MUST set the `source` field in the `Kployfile` file to a GitHub username or repo URL,
+    otherwise the pull operation will fail. For example, you can use `source : https://github.com/mhausenblas`
+    if you don't have a project repo for the app (yet) or `source : https://github.com/mhausenblas/abc`
+    if you want to explicitly set the app's project repo.
+    
+    Without argument all available apps are listed, with an argument the respective app is first
+    downloaded and then imported (as with `kploy init`):
+    
+    kploy pull
+    
+    kploy pull $ID
+    """    
+    here = os.path.realpath(".")
+    kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
+    archivefile = os.path.join(here, "".join([".", EXPORT_ARCHIVE_FILENAME]))
+    app_link = KAR_BASE_URL
+    try:
+        kploy, _ = util.load_yaml(filename=kployfile)
+        logging.debug(kploy)
+        if kploy["source"].startswith(VALID_WORKSPACE_PREFIXES):
+            print("Using %s as the app's workspace" %(kploy["source"]))
+            if not param:
+                if VERBOSE: logging.info("Trying to list apps in the workspace ...")
+                res = kploycommon._list_apps(kploy["source"], KAR_BASE_URL, VERBOSE)
+                apps = res.json()
+                app_list = []
+                for app in apps:
+                    app_list.append([
+                        # to do: add time stamp column here; need to provide it in kploy.net
+                        app["name"].split("/")[-1].split(".")[0], # to do: this is a hack and should really be done in kploy.net
+                        app["size"]
+                    ])
+                print(tabulate(app_list, ["ID", "SIZE"], tablefmt="plain"))
+            else:
+                app_id = param
+                if VERBOSE: logging.info("Trying to download app %s from the workspace ..." %(app_id))
+                if not kploycommon._download_app(kploy["source"], app_id, archivefile, KAR_BASE_URL, VERBOSE):
+                    raise NoSuchAppError
+                else:
+                    cmd_init(archivefile)
+        else:
+            raise InvalidWorkspaceError 
+    except (InvalidWorkspaceError) as iwe:
+        print(iwe.__doc__)
+        print("To learn how to fix this, run `kploy explain push`")
+        sys.exit(1)
+    except (NoSuchAppError) as nsae:
+        print(nsae.__doc__)
+        print("To learn how to fix this, run `kploy explain pull`")
+        sys.exit(1)
+    except (Exception) as e:
+        print("Something went wrong pulling from the registry:\n%s" %(e))
+        sys.exit(1)
+    finally:
+        if os.path.exists(archivefile):
+           os.remove(archivefile)
+    if not param:
+        print(80*"=")
+        print("\nOK, I've successfully pulled from the registry.")
+        print("\nYou can now `kploy pull $ID` to download and init an app.")
+        print("\nWARNING: a `kploy pull $ID` will overwrite whatever you had locally.\n")
+
 if __name__ == "__main__":
     try:
         cmds = {
@@ -472,7 +546,8 @@ if __name__ == "__main__":
             "export": cmd_export,
             "debug": cmd_debug,
             "scale": cmd_scale,
-            "push" : cmd_push
+            "push" : cmd_push,
+            "pull" : cmd_pull
         }
         
         parser = argparse.ArgumentParser(

@@ -289,3 +289,29 @@ def _push_app_archive(workspace, local_app_archive, registry_endpoint, verbose):
         res = requests.request("POST", operation_path_URL, data=archive_content)
         logging.debug("RESPONSE:\n%s" %(res.json()))
     return res
+
+def _list_apps(workspace, registry_endpoint, verbose):
+    """
+    Lists app in a workspace at a remote registry.
+    """
+    operation_path_URL = "".join([registry_endpoint, "/app", "?workspace=", workspace])
+    logging.debug("OPERATION URL:\n%s" %(operation_path_URL))
+    res = requests.request("GET", operation_path_URL)
+    logging.debug("RESPONSE:\n%s" %(res.json()))
+    return res
+
+def _download_app(workspace, app_id, local_app_archive, registry_endpoint, verbose):
+    """
+    Downloads app via ID from a workspace at a remote registry and stores it in local app archive.
+    """
+    operation_path_URL = "".join([registry_endpoint, "/app/", app_id, "?workspace=", workspace])
+    logging.debug("OPERATION URL:\n%s" %(operation_path_URL))
+    res = requests.request("GET", operation_path_URL)
+    if res.status_code == 200:
+        with open(local_app_archive, "w") as laa:
+            laa.write(res.content)
+            logging.debug("Written the following content to %s:\n\n%s" %(local_app_archive, res.content))
+        return True
+    else:
+        logging.debug("Got a %s HTTP status code, app archive does not exist" %(res.status_code))
+        return False
