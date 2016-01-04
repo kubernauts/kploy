@@ -500,11 +500,11 @@ def cmd_pull(param):
                 app_list = []
                 for app in apps:
                     app_list.append([
-                        # to do: add time stamp column here; need to provide it in kploy.net
-                        app["name"].split("/")[-1].split(".")[0], # to do: this is a hack and should really be done in kploy.net
+                        app["timeCreated"],
+                        app["name"].split("/")[-1].split(".")[0],
                         app["size"]
                     ])
-                print(tabulate(app_list, ["ID", "SIZE"], tablefmt="plain"))
+                print(tabulate(sorted(app_list, reverse=True), ["TIMESTAMP", "ID", "SIZE"], tablefmt="plain"))
             else:
                 app_id = param
                 if VERBOSE: logging.info("Trying to download app %s from the workspace ..." %(app_id))
