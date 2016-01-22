@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 try:
-   import pypandoc
-   long_description = pypandoc.convert('README.md', 'rst')
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
 except (IOError, ImportError):
-   long_description = ''
+    long_description = ''
 
 setup(
     name="kploy",
@@ -15,7 +15,7 @@ setup(
     author_email="michael.hausenblas@gmail.com",
     license="Apache",
     url="https://github.com/kubernauts/kploy",
-    keywords = ['Kubernetes', 'containers', 'appops', 'deployment'],
+    keywords=['Kubernetes', 'containers', 'appops', 'deployment'],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
