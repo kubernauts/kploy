@@ -8,11 +8,11 @@ The kploy commons (utility) functions.
 
 import os
 import logging
-import requests
 import sys
 import zipfile
 from time import sleep
 
+import requests
 from pyk import toolkit
 from pyk import util
 
