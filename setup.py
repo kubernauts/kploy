@@ -24,8 +24,13 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
     ],
+    entry_points={
+        "console_scripts": [
+            "kploy=kploy:main",
+        ],
+    },
     zip_safe=False,
-    packages=find_packages(),
+    py_modules=["kploy", "kploycommon"],
     install_requires=[
         "pyk",
         "tabulate"
