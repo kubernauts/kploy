@@ -534,7 +534,7 @@ def cmd_pull(param):
         print("\nYou can now `kploy pull $ID` to download and init an app.")
         print("\nWARNING: a `kploy pull $ID` will overwrite whatever you had locally.\n")
 
-if __name__ == "__main__":
+def main():
     try:
         cmds = {
             "dryrun" : cmd_dryrun,
@@ -576,3 +576,6 @@ if __name__ == "__main__":
     except (Exception) as e:
         print("Something went wrong:\n%s" %(e))
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()
