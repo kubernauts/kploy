@@ -66,13 +66,13 @@ def cmd_dryrun(param):
         kploy, _  = util.load_yaml(filename=kployfile)
         logging.debug(kploy)
         print("Validating application `%s/%s` ..." %(kploy["namespace"], kploy["name"]))
-        
+
         print("\n  CHECK: Is the Kubernetes cluster up & running and accessible via `%s`?" %(kploy["apiserver"]))
         pyk_client = kploycommon._connect(api_server=kploy["apiserver"], debug=DEBUG)
         nodes = pyk_client.execute_operation(method="GET", ops_path="/api/v1/nodes")
         if VERBOSE: logging.info("Got node list %s " %(util.serialize_tojson(nodes.json())))
         print("  \o/ ... I found %d node(s) to deploy your wonderful app onto." %(len(nodes.json()["items"])))
-        
+
         print("\n  CHECK: Are there RC and service manifests available around here?")
         try:
             rcs = os.path.join(here, RC_DIR)
@@ -203,7 +203,7 @@ def cmd_list(param):
 def cmd_init(param):
     """
     Creates a dummy `Kployfile` file in the current directory sets up the directories.
-    """    
+    """
     here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     if not param:
@@ -436,7 +436,7 @@ def cmd_push(param):
     otherwise the push operation will fail. For example, you can use `source : https://github.com/mhausenblas`
     if you don't have a project repo for the app (yet) or `source : https://github.com/mhausenblas/abc`
     if you want to explicitly set the app's project repo.
-    """    
+    """
     here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     archivefile = os.path.join(here, "".join([".", EXPORT_ARCHIVE_FILENAME]))
@@ -452,7 +452,7 @@ def cmd_push(param):
             res = kploycommon._push_app_archive(kploy["source"], archivefile, KAR_BASE_URL, VERBOSE)
             app_link = "".join([res.json()["selfLink"], "?workspace=", kploy["source"]])
         else:
-            raise InvalidWorkspaceError 
+            raise InvalidWorkspaceError
     except (InvalidWorkspaceError) as iwe:
         print(iwe.__doc__)
         print("To learn how to fix this, run `kploy explain push`")
@@ -462,7 +462,7 @@ def cmd_push(param):
         sys.exit(1)
     finally:
         if os.path.exists(archivefile):
-           os.remove(archivefile) 
+           os.remove(archivefile)
     print(80*"=")
     print("\nOK, I've successfully pushed the app archive to the registry:")
     print("%s" %(app_link))
@@ -476,14 +476,14 @@ def cmd_pull(param):
     otherwise the pull operation will fail. For example, you can use `source : https://github.com/mhausenblas`
     if you don't have a project repo for the app (yet) or `source : https://github.com/mhausenblas/abc`
     if you want to explicitly set the app's project repo.
-    
+
     Without argument all available apps are listed, with an argument the respective app is first
     downloaded and then imported (as with `kploy init`):
-    
+
     kploy pull
-    
+
     kploy pull $ID
-    """    
+    """
     here = os.path.realpath(".")
     kployfile = os.path.join(here, DEPLOYMENT_DESCRIPTOR)
     archivefile = os.path.join(here, "".join([".", EXPORT_ARCHIVE_FILENAME]))
@@ -513,7 +513,7 @@ def cmd_pull(param):
                 else:
                     cmd_init(archivefile)
         else:
-            raise InvalidWorkspaceError 
+            raise InvalidWorkspaceError
     except (InvalidWorkspaceError) as iwe:
         print(iwe.__doc__)
         print("To learn how to fix this, run `kploy explain push`")
@@ -549,7 +549,7 @@ def main():
             "push" : cmd_push,
             "pull" : cmd_pull
         }
-        
+
         parser = argparse.ArgumentParser(
             description="kploy is an opinionated Kubernetes deployment system for appops",
             epilog="Examples: `kploy init`, `kploy run`, `kploy list`, or to learn its usage: `kploy explain run`, `kploy explain list`, etc.")
